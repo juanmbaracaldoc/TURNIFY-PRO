@@ -46,3 +46,10 @@ def call_next(request):
         })
 
     return Response({"turn":turn.number})
+
+@api_view(['GET'])
+def get_all_turns(request):
+    """Baracaldo: Get all turns with their current status"""
+    turns = Turn.objects.all().order_by('-created_at')
+    data = [{"number": t.number, "status": t.status, "created_at": t.created_at} for t in turns]
+    return Response({"turns": data})
