@@ -238,3 +238,34 @@ body {
 }
 
 .modal.show { display: block; }
+
+/* Accessibility improvements by Michael Leon */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus styles for accessibility */
+.btn:focus,
+input:focus,
+select:focus {
+  outline: 3px solid #4facfe;
+  outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .card {
+    border: 2px solid var(--dark);
+  }
+  .btn {
+    border: 2px solid white;
+  }
+}
