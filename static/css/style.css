@@ -238,3 +238,145 @@ body {
 }
 
 .modal.show { display: block; }
+
+/* Accessibility improvements by Michael Leon */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus styles for accessibility */
+.btn:focus,
+input:focus,
+select:focus {
+  outline: 3px solid #4facfe;
+  outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .card {
+    border: 2px solid var(--dark);
+  }
+  .btn {
+    border: 2px solid white;
+  }
+}
+
+/* Toast notifications - Michael Leon */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  animation: slideIn 0.3s ease;
+}
+
+.toast-success { background: linear-gradient(135deg, #11998e, #38ef7d); }
+.toast-error { background: linear-gradient(135deg, #eb3349, #f45c43); }
+.toast-warning { background: linear-gradient(135deg, #f2994a, #f2c94c); }
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Enhanced loading spinner */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(255,255,255,0.3);
+  border-top-color: #4facfe;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Mobile navigation - Michael Leon */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: rgba(0,0,0,0.2);
+}
+
+.navbar-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.navbar-toggle span {
+  width: 25px;
+  height: 3px;
+  background: white;
+  border-radius: 3px;
+}
+
+@media (max-width: 768px) {
+  .navbar-toggle { display: flex; }
+  .navbar-menu {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.9);
+    padding: 1rem;
+  }
+  .navbar-menu.active { display: flex; }
+
+/* Status badges - Michael Leon */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-waiting { background: #fef3c7; color: #d97706; }
+.badge-active { background: #dbeafe; color: #2563eb; }
+.badge-completed { background: #d1fae5; color: #059669; }
+.badge-vip { background: #fce7f3; color: #db2777; }
+
+/* Print styles */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; color: black; }
+}
+}
