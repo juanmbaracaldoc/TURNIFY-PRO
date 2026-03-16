@@ -70,3 +70,15 @@ def complete_turn(request):
         
         return Response({"success": True, "message": f"Turn {turn_number} completed"})
     return Response({"success": False, "message": "Turn not found"}, status=404)
+
+@api_view(['POST'])
+def reset_turns(request):
+    """Baracaldo: Reset all turns (admin function)"""
+    Turn.objects.all().delete()
+    
+    if db:
+        docs = db.collection("turns").stream()
+        for doc in docs:
+            doc.reference.delete()
+    
+    return Response({"success": True, "message": "All turns have been reset"})
