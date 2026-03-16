@@ -82,3 +82,11 @@ def reset_turns(request):
             doc.reference.delete()
     
     return Response({"success": True, "message": "All turns have been reset"})
+
+@api_view(['GET'])
+def get_current_turn(request):
+    """Baracaldo: Get the currently active turn being called"""
+    turn = Turn.objects.filter(status="calling").first()
+    if turn:
+        return Response({"number": turn.number, "status": turn.status})
+    return Response({"number": None, "status": "none"})
