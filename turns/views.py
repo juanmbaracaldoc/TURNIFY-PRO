@@ -53,3 +53,20 @@ def get_all_turns(request):
     turns = Turn.objects.all().order_by('-created_at')
     data = [{"number": t.number, "status": t.status, "created_at": t.created_at} for t in turns]
     return Response({"turns": data})
+
+@api_view(['POST'])
+def complete_turn(request):
+    """Baracaldo: Mark a turn as completed"""
+    turn_number = request.data.get('number')
+    turn = Turn.objects.filter(number=turn_number).first()
+    if turn:
+        turn.status = "completed"
+        turn.save()
+        
+        if db:
+            db.collection("turns").document(turn_number).update({
+                "status": "completed"
+            })
+        
+        return Response({"success": True, "message": f"Turn {turn_number} completed"})
+    return Response({"success": False, "message": "Turn not found"}, status=404)
