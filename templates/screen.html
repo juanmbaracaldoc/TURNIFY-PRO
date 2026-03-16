@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pantalla Turnify Pro</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { background: radial-gradient(circle at center, #0f0f23 0%, #1a0033 70%, #000 100%); }
+        .screen h2 {
+            background: linear-gradient(45deg, #00f2fe, #ff00ff, #00ff88, #ffaa00);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease infinite, pulse 2s infinite;
+        }
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+    </style>
+</head>
+
+<body class="screen">
+
+<div style="position: fixed; top: 2rem; left: 2rem; z-index: 10; font-size: 1.5rem; opacity: 0.7;">
+    Turnify Pro Digital Signage • {{ current_time }}
+</div>
+
+<div style="font-size: 4rem; margin-bottom: 3rem; opacity: 0.6;">Próximo turno:</div>
+<h2 id="turn">Esperando...</h2>
+
+<div style="margin-top: 4rem; font-size: 2rem; opacity: 0.4;">
+    <span style="margin-right: 3rem;">⏱️ Tiempo: <span id="timer">--:--</span></span>
+    <span>📊 Turnos hoy: <span id="todayCount">0</span></span>
+</div>
+
+<script>
+
+    // TURN0 DEL USUARIO (esto luego lo pueden mandar desde backend)
+    const userTurn = "{{ user_turn }}";
+
+    // Timer
+    function updateTimer() {
+        const now = new Date();
+        document.getElementById('timer').textContent = now.toLocaleTimeString('es-ES');
+    }
+
+    setInterval(updateTimer, 1000);
+    updateTimer();
+
+
+    // Demo turnos
+    const turns = ['A001', 'A002', 'A003', 'A004', 'A005'];
+    let currentIndex = 0;
+
+    setInterval(() => {
+
+        let currentTurn = turns[currentIndex];
+
+        document.getElementById('turn').textContent = currentTurn;
+
+        // buscar posicion del turno del usuario
+        let userIndex = turns.indexOf(userTurn);
+
+        // verificar si faltan 2 turnos
+        if (userIndex - currentIndex === 2) {
+            alert("⚠️ Atención: faltan solo 2 turnos para que seas atendido.");
+        }
+
+        currentIndex = (currentIndex + 1) % turns.length;
+
+        document.getElementById('todayCount').textContent = Math.floor(Math.random() * 150) + 50;
+
+    }, 4000);
+
+
+    // Simular Firebase listener después
+    // db.collection("current").doc("active").onSnapshot(doc => {
+    //     document.getElementById('turn').textContent = doc.data()?.number || '--';
+    // });
+
+</script>
+
+</body>
+</html>

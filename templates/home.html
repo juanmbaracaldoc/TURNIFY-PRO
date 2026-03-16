@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turnify Pro - Solicita tu Turno</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎫</text></svg>">
+</head>
+<body>
+    <div class="card fade-in-up">
+        <div style="font-size: 4rem; margin-bottom: 1rem; background: linear-gradient(45deg, var(--success), var(--warning)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🎫</div>
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem; background: var(--primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Turnify Pro</h1>
+        <p style="font-size: 1.3rem; margin-bottom: 2.5rem; opacity: 0.9;">Sistema Profesional de Gestión de Turnos</p>
+        
+        <button id="getTurnBtn" class="btn btn-primary bounce" onclick="getTurn()">
+            🎯 Pedir mi Turno
+        </button>
+        
+        <div id="turn" style="margin-top: 2rem; font-size: 3rem; font-weight: bold; min-height: 80px; display: flex; align-items: center; justify-content: center; color: var(--success); opacity: 0; transform: scale(0.8); transition: all 0.5s ease;"></div>
+        
+        <p style="margin-top: 2rem; font-size: 0.9rem; opacity: 0.7;">Turnos procesados con tecnología Firebase + Django</p>
+    </div>
+
+    <!-- Modal Tu Turno -->
+    <div id="turnModal" class="modal">
+        <div class="modal-content">
+            <div style="font-size: 6rem; margin-bottom: 1rem;">🎉</div>
+            <h2>¡Tu turno asignado!</h2>
+            <div id="modalTurn" style="font-size: 4rem; font-weight: bold; color: var(--success); margin: 1rem 0; background: linear-gradient(45deg, var(--success), var(--warning)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></div>
+            <p>Espera tu turno cómodamente. Te notificaremos cuando sea llamado.</p>
+            <button class="btn btn-primary" onclick="closeModal()">Entendido</button>
+        </div>
+    </div>
+
+    <script>
+        let isLoading = false;
+        
+        function getTurn() {
+            if (isLoading) return;
+            
+            const btn = document.getElementById('getTurnBtn');
+            const turnDiv = document.getElementById('turn');
+            
+            isLoading = true;
+            btn.classList.add('btn-loading');
+            btn.textContent = 'Generando...';
+            btn.disabled = true;
+            
+            fetch('/api/create/', { method: 'POST' })
+                .then(r => r.json())
+                .then(d => {
+                    const turnNumber = d.number;
+                    turnDiv.innerText = `¡Tu turno: ${turnNumber}!`;
+                    turnDiv.style.opacity = '1';
+                    turnDiv.style.transform = 'scale(1)';
+                    showModal(turnNumber);
+                })
+                .catch(err => {
+                    turnDiv.innerText = 'Error. Intenta de nuevo.';
+                    turnDiv.style.color = '#e74c3c';
+                })
+                .finally(() => {
+                    isLoading = false;
+                    btn.classList.remove('btn-loading');
+                    btn.textContent = '🎯 Pedir mi Turno';
+                    btn.disabled = false;
+                });
+        }
+        
+        function showModal(turn) {
+            document.getElementById('modalTurn').textContent = turn;
+            document.getElementById('turnModal').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('turnModal').classList.remove('show');
+        }
+        
+        // Cerrar modal clic fuera
+        window.onclick = (e) => {
+            if (e.target.classList.contains('modal')) closeModal();
+        }
+    </script>
+</body>
+</html>

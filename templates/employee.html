@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PANEL DE EMPLEADO - Turnify Pro</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .turno-actual-panel {
+            font-size: 6rem !important;
+            font-weight: 900 !important;
+            text-shadow: 0 0 40px rgba(0,255,0,0.8) !important;
+            animation: pulse 1.5s infinite !important;
+        }
+        .metricas-panel {
+            background: linear-gradient(135deg, #11998e, #38ef7d) !important;
+            color: white !important;
+        }
+        .contador-esperando {
+            font-size: 4rem !important;
+            color: #f39c12 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard fade-in-up">
+        <!-- TURNO ACTUAL GIGANTE -->
+        <div class="stats-grid" style="margin-bottom: 2rem;">
+            <div class="stat-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #ff6b6b, #ee5a52); color: white; text-align: center;">
+                <div style="font-size: 1.8rem; margin-bottom: 1rem;">📢 TURNO ACTUAL</div>
+                <div id="currentTurn" class="turno-actual-panel" style="margin-bottom: 0.5rem;">---</div>
+                <div style="font-size: 1.5rem; opacity: 0.9;">Próximo turno en cola</div>
+            </div>
+        </div>
+
+        <!-- MÉTRICAS GRANDES Y CLARAS -->
+        <div class="stats-grid metricas-panel">
+            <div class="stat-card">
+                <div id="waitingCount" class="contador-esperando">0</div>
+                <h3 style="font-size: 1.5rem;">EN ESPERA</h3>
+                <div style="font-size: 1.3rem;">Turnos ahora</div>
+            </div>
+            <div class="stat-card">
+                <div id="totalToday" style="font-size: 4rem; font-weight: 900; color: white;">0</div>
+                <h3 style="font-size: 1.5rem;">TOTAL HOY</h3>
+                <div style="font-size: 1.3rem;">Registrados</div>
+            </div>
+            <div class="stat-card">
+                <div id="processed" style="font-size: 3.5rem; font-weight: 900; color: white;">0</div>
+                <h3 style="font-size: 1.5rem;">PROCESADOS</h3>
+                <div style="font-size: 1.3rem;">Hoy completados</div>
+            </div>
+        </div>
+
+        <!-- BOTON LLAMAR CENTRAL Y LLAMATIVO -->
+        <div class="card" style="max-width: 700px; margin: 3rem auto; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important;">
+            <h1 style="font-size: 3rem; margin-bottom: 1.5rem;">🎯 PANEL DE CONTROL</h1>
+            
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 2rem;">
+                <div style="font-size: 2rem; opacity: 0.9; margin-bottom: 2rem;" id="statusPanel">Listo para llamar</div>
+                
+                <button id="callBtn" class="btn" style="
+                    font-size: 2.2rem !important; 
+                    padding: 2.5rem 5rem !important; 
+                    background: linear-gradient(45deg, #ff6b35, #f7931e) !important;
+                    box-shadow: 0 25px 50px rgba(255,107,53,0.4) !important;
+                    border-radius: 50px !important;
+                    transition: all 0.3s !important;
+                " onclick="callNext()">
+                    📢 LLAMAR SIGUIENTE TURNO
+                </button>
+                
+                <div style="font-size: 1.8rem; opacity: 0.8;" id="lastCalled">Último llamado: Ninguno</div>
+            </div>
+        </div>
+
+        <!-- HISTORIAL SIMPLE Y LIMPIO -->
+        <div class="card" style="max-width: 800px; margin: 0 auto 3rem;">
+            <h2 style="font-size: 2.2rem; margin-bottom: 2rem; text-align: center; color: var(--dark);">📜 HISTORIAL 10 ÚLTIMOS</h2>
+            <div id="historyList" style="font-size: 1.4rem; line-height: 2; max-height: 400px; overflow-y: auto;">
+                Esperando primer llamado...
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/turns_data.js"></script>
+    <script>
+        let calledHistory = [];
+        turnify.updateEmployee();
+        
+        function callNext() {
+            const btn = document.getElementById('callBtn');
+            const status = document.getElementById('statusPanel');
+            
+            btn.style.background = 'linear-gradient(45deg, #95a5a6, #7f8c8d)';
+            btn.disabled = true;
+            status.textContent = '🔄 LLAMANDO TURNO...';
+            status.style.color = '#f39c12';
+            
+            fetch('/api/call/', {method: 'POST'})
+                .then(() => {
+                    status.innerHTML = '✅ TURNO LLAMADO CORRECTAMENTE';
+                    status.style.color = '#27ae60';
+                    turnify.fetchTurns();
+                })
+                .catch(() => {
+                    status.innerHTML = '❌ ERROR - Reintentar';
+                    status.style.color = '#e74c3c';
+                })
+                .finally(() => {
+                    setTimeout(() => {
+                        btn.style.background = 'linear-gradient(45deg, #ff6b35, #f7931e)';
+                        btn.disabled = false;
+                        status.textContent = 'Listo para llamar';
+                        status.style.color = 'white';
+                    }, 2000);
+                });
+        }
+        
+        // Update UI cada 3s
+        setInterval(() => {
+            turnify.updateEmployee();
+            updateHistoryUI();
+        }, 3000);
+        
+        function updateHistoryUI() {
+            const list = document.getElementById('historyList');
+            if (turnify.turns.length === 0) {
+                list.innerHTML = '<div style="text-align: center; padding: 4rem; color: #999; font-size: 1.5rem;">Sin turnos llamados aún</div>';
+                return;
+            }
+            list.innerHTML = turnify.turns.slice(0,10).map(turn => 
+                `<div style="padding: 1rem; border-bottom: 2px solid #eee; font-weight: 600; display: flex; justify-content: space-between;">
+                    <span style="font-size: 2rem;">${turn.number}</span>
+                    <span style="color: ${turn.status === 'calling' ? '#e74c3c' : turn.status === 'waiting' ? '#f39c12' : '#27ae60'}">${turn.status.toUpperCase()}</span>
+                </div>`
+            ).join('');
+        }
+    </script>
+</body>
+</html>

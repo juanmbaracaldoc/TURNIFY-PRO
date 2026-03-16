@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TURNIFY PRO - Dashboard en Tiempo Real</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .turno-actual-gigante {
+            font-size: 8rem !important;
+            font-weight: 900 !important;
+            text-shadow: 0 0 60px rgba(255,255,255,0.8) !important;
+            animation: glow 2s ease-in-out infinite alternate !important;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 30px rgba(0,255,255,0.8), 0 0 60px rgba(0,255,255,0.6); }
+            to { text-shadow: 0 0 40px rgba(255,0,255,0.8), 0 0 80px rgba(255,0,255,0.6); }
+        }
+        .metricas-principales {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+        }
+        .status-esperando { background: #f39c12 !important; color: white !important; }
+        .status-llamando { 
+            background: linear-gradient(45deg, #e74c3c, #c0392b) !important; 
+            color: white !important;
+            animation: pulse 1s infinite !important;
+        }
+        .numero-turno {
+            font-size: 3.5rem !important;
+            font-weight: 900 !important;
+            background: linear-gradient(45deg, #00f2fe, #ff00ff) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- HEADER IMPACTANTE -->
+        <header style="background: rgba(0,0,0,0.3); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem; text-align: center;">
+            <h1 style="font-size: 3.5rem; margin: 0; background: linear-gradient(45deg, white, #00f2fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                🎛️ DASHBOARD TURNIFY PRO
+            </h1>
+            <div style="font-size: 1.4rem; opacity: 0.9; margin-top: 0.5rem;">Sistema de Turnos en Tiempo Real</div>
+        </header>
+
+        <!-- TURNO ACTUAL GIGANTE -->
+        <div class="stats-grid" style="margin-bottom: 3rem;">
+            <div class="stat-card" style="grid-column: 1 / -1; text-align: center; background: linear-gradient(135deg, #1e3c72, #2a5298); color: white;">
+                <div style="font-size: 1.5rem; margin-bottom: 1rem; opacity: 0.9;">🔥 TURNO ACTUAL</div>
+                <div id="liveTurn" class="turno-actual-gigante" style="margin-bottom: 1rem;">---</div>
+                <div style="font-size: 1.8rem;">Próximo: <span id="nextTurn" style="color: #00ff88; font-weight: bold;">CARGANDO...</span></div>
+            </div>
+        </div>
+
+        <!-- MÉTRICAS VISIBLES Y GRANDES -->
+        <div class="stats-grid metricas-principales">
+            <div class="stat-card">
+                <div class="numero-turno" id="waitingTurns">0</div>
+                <h3 style="color: white; font-size: 1.4rem;">TURNOs ESPERANDO</h3>
+                <div style="font-size: 1.2rem; opacity: 0.9;">En cola ahora</div>
+            </div>
+            <div class="stat-card">
+                <div class="numero-turno" id="totalTurns">0</div>
+                <h3 style="color: white; font-size: 1.4rem;">TOTAL REGISTRADOS</h3>
+                <div style="font-size: 1.2rem; opacity: 0.9;">Hoy</div>
+            </div>
+            <div class="stat-card">
+                <div class="numero-turno" id="processedToday">0</div>
+                <h3 style="color: white; font-size: 1.4rem;">PROCESADOS HOY</h3>
+                <div style="font-size: 1.2rem; opacity: 0.9;">% Completados</div>
+            </div>
+        </div>
+
+        <!-- LISTA DE TURNOS ACTUALIZADA -->
+        <div style="background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-lg); margin-top: 3rem;">
+            <div style="background: linear-gradient(135deg, var(--success), #00f2fe); padding: 2rem; color: white; text-align: center;">
+                <h2 style="margin: 0; font-size: 2rem;">📋 LISTA DE TURNOS ACTUAL</h2>
+            </div>
+            <div class="turn-table">
+                <table style="width: 100%;">
+                    <thead>
+                        <tr style="background: var(--dark); color: white;">
+                            <th style="padding: 1.5rem 1rem; font-size: 1.2rem;">NUMERO</th>
+                            <th style="padding: 1.5rem 1rem; font-size: 1.2rem;">ESTADO</th>
+                            <th style="padding: 1.5rem 1rem; font-size: 1.2rem;">CREADO</th>
+                            <th style="padding: 1.5rem 1rem; font-size: 1.2rem;">ESPERA</th>
+                        </tr>
+                    </thead>
+                    <tbody id="turnsList">
+                        <tr><td colspan="4" style="padding: 3rem; text-align: center; color: #999; font-style: italic;">Cargando turnos en tiempo real...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BOTONES DE ACCION -->
+        <div style="text-align: center; margin-top: 3rem;">
+            <button class="btn btn-primary" onclick="turnify.fetchTurns()" style="font-size: 1.3rem; padding: 1.5rem 3rem;">
+                🔄 ACTUALIZAR AHORA
+            </button>
+        </div>
+    </div>
+
+    <script src="/static/js/turns_data.js"></script>
+    <script>
+        // Auto update cada 2 segundos
+        setInterval(() => {
+            turnify.fetchTurns();
+            turnify.updateDashboard();
+        }, 2000);
+        
+        // Inicial
+        turnify.fetchTurns();
+    </script>
+</body>
+</html>
