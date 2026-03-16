@@ -1,0 +1,6 @@
+
+django
+djangorestframework
+firebase-admin
+django-cors-headers
+python-dotenv
