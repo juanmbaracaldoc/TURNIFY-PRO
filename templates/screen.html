@@ -3,84 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pantalla Turnify Pro</title>
+    <title>Pantalla Digital - Turnify Pro</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
-        body { background: radial-gradient(circle at center, #0f0f23 0%, #1a0033 70%, #000 100%); }
-        .screen h2 {
-            background: linear-gradient(45deg, #00f2fe, #ff00ff, #00ff88, #ffaa00);
-            background-size: 300% 300%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradientShift 3s ease infinite, pulse 2s infinite;
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 0%, #0f3460 100%);
+            color: white;
+            overflow: hidden;
         }
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+        .screen-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+        .header-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 52, 96, 0.9);
+            border-bottom: 4px solid var(--accent);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .header-left {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .header-right {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            font-size: 1.1rem;
+        }
+        .clock-display {
+            background: rgba(52, 152, 219, 0.2);
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            border: 2px solid var(--accent);
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+        }
+        .stats-display {
+            background: rgba(39, 174, 96, 0.2);
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            border: 2px solid var(--success);
+            font-weight: 700;
+        }
+        .main-content {
+            margin-top: 120px;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .calling-section {
+            margin-bottom: 4rem;
+        }
+        .calling-label {
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+        .calling-number {
+            font-size: 12rem;
+            font-weight: 900;
+            color: var(--warning);
+            text-shadow: 0 0 40px rgba(243, 156, 18, 0.8),
+                         0 0 80px rgba(243, 156, 18, 0.4),
+                         0 0 120px rgba(52, 152, 219, 0.2);
+            animation: pulse 2s ease-in-out infinite;
+            line-height: 1;
+            margin: 0;
+        }
+        .next-section {
+            margin-top: 4rem;
+            padding: 2rem;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 20px;
+            border: 2px solid rgba(52, 152, 219, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        .next-label {
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ccc;
+            margin-bottom: 2rem;
+        }
+        .next-turns-display {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .next-turn-number {
+            background: linear-gradient(135deg, var(--accent), #1e8bc3);
+            padding: 1.5rem 2.5rem;
+            border-radius: 15px;
+            font-size: 3rem;
+            font-weight: 900;
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.4);
+            animation: bounce 1s ease-in-out infinite;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        .next-turn-number:nth-child(1) { animation-delay: 0s; }
+        .next-turn-number:nth-child(2) { animation-delay: 0.15s; }
+        .next-turn-number:nth-child(3) { animation-delay: 0.3s; }
+        .next-turn-number:nth-child(4) { animation-delay: 0.45s; }
+        .next-turn-number:nth-child(5) { animation-delay: 0.6s; }
+        .empty-state {
+            font-size: 3rem;
+            color: #666;
+            opacity: 0.8;
+        }
+        @keyframes pulse {
+            0%, 100% { 
+                text-shadow: 0 0 40px rgba(243, 156, 18, 0.8),
+                             0 0 80px rgba(243, 156, 18, 0.4),
+                             0 0 120px rgba(52, 152, 219, 0.2);
+                transform: scale(1);
+            }
+            50% { 
+                text-shadow: 0 0 60px rgba(243, 156, 18, 1),
+                             0 0 100px rgba(243, 156, 18, 0.6),
+                             0 0 150px rgba(52, 152, 219, 0.3);
+                transform: scale(1.02);
+            }
         }
     </style>
 </head>
+<body>
+    <!-- Header -->
+    <div class="header-bar">
+        <div class="header-left">
+            🎫 Turnify Pro - Pantalla Digital
+        </div>
+        <div class="header-right">
+            <div class="stats-display">
+                👥 En espera: <span id="waitingCount">0</span>
+            </div>
+            <div class="clock-display">
+                🕐 <span id="timer">--:--:--</span>
+            </div>
+        </div>
+    </div>
 
-<body class="screen">
+    <!-- Main Content -->
+    <div class="screen-container">
+        <div class="main-content">
+            <!-- Currently Calling -->
+            <div class="calling-section">
+                <div class="calling-label">📢 Atendiendo</div>
+                <p class="calling-number" id="currentNumber">---</p>
+            </div>
 
-<div style="position: fixed; top: 2rem; left: 2rem; z-index: 10; font-size: 1.5rem; opacity: 0.7;">
-    Turnify Pro Digital Signage • {{ current_time }}
-</div>
+            <!-- Next Turns -->
+            <div class="next-section">
+                <div class="next-label">▼ Próximos a ser llamados</div>
+                <div class="next-turns-display" id="nextTurnsDisplay">
+                    <div class="empty-state">...esperando</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<div style="font-size: 4rem; margin-bottom: 3rem; opacity: 0.6;">Próximo turno:</div>
-<h2 id="turn">Esperando...</h2>
-
-<div style="margin-top: 4rem; font-size: 2rem; opacity: 0.4;">
-    <span style="margin-right: 3rem;">⏱️ Tiempo: <span id="timer">--:--</span></span>
-    <span>📊 Turnos hoy: <span id="todayCount">0</span></span>
-</div>
-
-<script>
-
-    // TURN0 DEL USUARIO (esto luego lo pueden mandar desde backend)
-    const userTurn = "{{ user_turn }}";
-
-    // Timer
-    function updateTimer() {
-        const now = new Date();
-        document.getElementById('timer').textContent = now.toLocaleTimeString('es-ES');
-    }
-
-    setInterval(updateTimer, 1000);
-    updateTimer();
-
-
-    // Demo turnos
-    const turns = ['A001', 'A002', 'A003', 'A004', 'A005'];
-    let currentIndex = 0;
-
-    setInterval(() => {
-
-        let currentTurn = turns[currentIndex];
-
-        document.getElementById('turn').textContent = currentTurn;
-
-        // buscar posicion del turno del usuario
-        let userIndex = turns.indexOf(userTurn);
-
-        // verificar si faltan 2 turnos
-        if (userIndex - currentIndex === 2) {
-            alert("⚠️ Atención: faltan solo 2 turnos para que seas atendido.");
+    <script>
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('timer').textContent = now.toLocaleTimeString('es-ES');
         }
 
-        currentIndex = (currentIndex + 1) % turns.length;
+        function updateScreen() {
+            // Get current turn being served
+            fetch('/api/current/')
+                .then(r => r.json())
+                .then(d => {
+                    if (d.number) {
+                        document.getElementById('currentNumber').textContent = d.number;
+                    } else {
+                        document.getElementById('currentNumber').textContent = '---';
+                    }
+                })
+                .catch(e => console.error('Error fetching current:', e));
 
-        document.getElementById('todayCount').textContent = Math.floor(Math.random() * 150) + 50;
+            // Get waiting turns
+            fetch('/api/waiting/')
+                .then(r => r.json())
+                .then(d => {
+                    document.getElementById('waitingCount').textContent = d.count;
+                    
+                    let html = '';
+                    if (d.turns.length === 0) {
+                        html = '<div class="empty-state">✓ Sin turnos esperando</div>';
+                    } else {
+                        // Show next 5 turns
+                        d.turns.slice(0, 5).forEach(turn => {
+                            html += `<div class="next-turn-number">${turn.number}</div>`;
+                        });
+                    }
+                    document.getElementById('nextTurnsDisplay').innerHTML = html;
+                })
+                .catch(e => console.error('Error fetching waiting:', e));
+        }
 
-    }, 4000);
+        // Update clock every second
+        setInterval(updateClock, 1000);
+        updateClock();
 
-
-    // Simular Firebase listener después
-    // db.collection("current").doc("active").onSnapshot(doc => {
-    //     document.getElementById('turn').textContent = doc.data()?.number || '--';
-    // });
-
-</script>
-
+        // Update screen data every 2 seconds
+        updateScreen();
+        setInterval(updateScreen, 2000);
+    </script>
 </body>
 </html>

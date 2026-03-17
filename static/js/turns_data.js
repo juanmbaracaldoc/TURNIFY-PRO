@@ -17,9 +17,10 @@ class TurnifyData {
 
     async fetchTurns() {
         try {
-            // Obtener todos los turnos via API (agregar endpoint en views.py)
-            const response = await fetch('/api/turns/');
-            this.turns = await response.json();
+            // Obtener todos los turnos via API
+            const response = await fetch('/api/all/');
+            const data = await response.json();
+            this.turns = data.turns || [];
             
             // Turno actual
             const callingTurn = this.turns.find(t => t.status === 'calling');

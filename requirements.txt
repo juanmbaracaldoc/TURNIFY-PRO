@@ -4,3 +4,5 @@ djangorestframework
 firebase-admin
 django-cors-headers
 python-dotenv
+requests
+google-genai

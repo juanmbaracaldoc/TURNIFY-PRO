@@ -6,136 +6,240 @@
     <title>PANEL DE EMPLEADO - Turnify Pro</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
+        .current-turn-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .current-turn-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.1;
+        }
+
+        .current-turn-section > * {
+            position: relative;
+            z-index: 1;
+        }
+
         .turno-actual-panel {
             font-size: 6rem !important;
             font-weight: 900 !important;
-            text-shadow: 0 0 40px rgba(0,255,0,0.8) !important;
+            text-shadow: 0 0 40px rgba(255,255,255,0.8) !important;
             animation: pulse 1.5s infinite !important;
+            margin: 1rem 0;
         }
-        .metricas-panel {
-            background: linear-gradient(135deg, #11998e, #38ef7d) !important;
-            color: white !important;
+
+        .estado-actual {
+            font-size: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            margin: 1rem 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
         }
-        .contador-esperando {
-            font-size: 4rem !important;
-            color: #f39c12 !important;
+
+        .control-panel {
+            background: var(--lighter);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .control-btn {
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 80px;
+            justify-content: center;
+        }
+
+        .call-btn {
+            background: var(--gradient-success);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(72, 187, 120, 0.39);
+        }
+
+        .call-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(72, 187, 120, 0.5);
+        }
+
+        .finish-btn {
+            background: var(--gradient-danger);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(229, 62, 62, 0.39);
+        }
+
+        .finish-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(229, 62, 62, 0.5);
+        }
+
+        .finish-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .waiting-queue {
+            background: var(--lighter);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .queue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .queue-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin: 0;
+        }
+
+        .queue-count {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .turn-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 1.5rem;
+            margin: 0.7rem 0;
+            background: var(--gray-50);
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .turn-item:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow);
+            background: white;
+        }
+
+        .turn-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .turn-time {
+            color: var(--gray-500);
+            font-size: 0.9rem;
+        }
+
+        .call-turn-btn {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .call-turn-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 179, 237, 0.4);
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: var(--lighter);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: var(--gray-600);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+        }
+
+        .no-turns {
+            text-align: center;
+            color: var(--gray-500);
+            padding: 3rem;
+            font-size: 1.2rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
-<body>
-    <div class="dashboard fade-in-up">
-        <!-- TURNO ACTUAL GIGANTE -->
-        <div class="stats-grid" style="margin-bottom: 2rem;">
-            <div class="stat-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #ff6b6b, #ee5a52); color: white; text-align: center;">
-                <div style="font-size: 1.8rem; margin-bottom: 1rem;">📢 TURNO ACTUAL</div>
-                <div id="currentTurn" class="turno-actual-panel" style="margin-bottom: 0.5rem;">---</div>
-                <div style="font-size: 1.5rem; opacity: 0.9;">Próximo turno en cola</div>
-            </div>
-        </div>
-
-        <!-- MÉTRICAS GRANDES Y CLARAS -->
-        <div class="stats-grid metricas-panel">
-            <div class="stat-card">
-                <div id="waitingCount" class="contador-esperando">0</div>
-                <h3 style="font-size: 1.5rem;">EN ESPERA</h3>
-                <div style="font-size: 1.3rem;">Turnos ahora</div>
-            </div>
-            <div class="stat-card">
-                <div id="totalToday" style="font-size: 4rem; font-weight: 900; color: white;">0</div>
-                <h3 style="font-size: 1.5rem;">TOTAL HOY</h3>
-                <div style="font-size: 1.3rem;">Registrados</div>
-            </div>
-            <div class="stat-card">
-                <div id="processed" style="font-size: 3.5rem; font-weight: 900; color: white;">0</div>
-                <h3 style="font-size: 1.5rem;">PROCESADOS</h3>
-                <div style="font-size: 1.3rem;">Hoy completados</div>
-            </div>
-        </div>
-
-        <!-- BOTON LLAMAR CENTRAL Y LLAMATIVO -->
-        <div class="card" style="max-width: 700px; margin: 3rem auto; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important;">
-            <h1 style="font-size: 3rem; margin-bottom: 1.5rem;">🎯 PANEL DE CONTROL</h1>
-            
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 2rem;">
-                <div style="font-size: 2rem; opacity: 0.9; margin-bottom: 2rem;" id="statusPanel">Listo para llamar</div>
-                
-                <button id="callBtn" class="btn" style="
-                    font-size: 2.2rem !important; 
-                    padding: 2.5rem 5rem !important; 
-                    background: linear-gradient(45deg, #ff6b35, #f7931e) !important;
-                    box-shadow: 0 25px 50px rgba(255,107,53,0.4) !important;
-                    border-radius: 50px !important;
-                    transition: all 0.3s !important;
-                " onclick="callNext()">
-                    📢 LLAMAR SIGUIENTE TURNO
-                </button>
-                
-                <div style="font-size: 1.8rem; opacity: 0.8;" id="lastCalled">Último llamado: Ninguno</div>
-            </div>
-        </div>
-
-        <!-- HISTORIAL SIMPLE Y LIMPIO -->
-        <div class="card" style="max-width: 800px; margin: 0 auto 3rem;">
-            <h2 style="font-size: 2.2rem; margin-bottom: 2rem; text-align: center; color: var(--dark);">📜 HISTORIAL 10 ÚLTIMOS</h2>
-            <div id="historyList" style="font-size: 1.4rem; line-height: 2; max-height: 400px; overflow-y: auto;">
-                Esperando primer llamado...
-            </div>
-        </div>
-    </div>
-
-    <script src="/static/js/turns_data.js"></script>
-    <script>
-        let calledHistory = [];
-        turnify.updateEmployee();
-        
-        function callNext() {
-            const btn = document.getElementById('callBtn');
-            const status = document.getElementById('statusPanel');
-            
-            btn.style.background = 'linear-gradient(45deg, #95a5a6, #7f8c8d)';
-            btn.disabled = true;
-            status.textContent = '🔄 LLAMANDO TURNO...';
-            status.style.color = '#f39c12';
-            
-            fetch('/api/call/', {method: 'POST'})
-                .then(() => {
-                    status.innerHTML = '✅ TURNO LLAMADO CORRECTAMENTE';
-                    status.style.color = '#27ae60';
-                    turnify.fetchTurns();
-                })
-                .catch(() => {
-                    status.innerHTML = '❌ ERROR - Reintentar';
-                    status.style.color = '#e74c3c';
-                })
-                .finally(() => {
-                    setTimeout(() => {
-                        btn.style.background = 'linear-gradient(45deg, #ff6b35, #f7931e)';
-                        btn.disabled = false;
-                        status.textContent = 'Listo para llamar';
-                        status.style.color = 'white';
-                    }, 2000);
-                });
-        }
-        
-        // Update UI cada 3s
-        setInterval(() => {
-            turnify.updateEmployee();
-            updateHistoryUI();
-        }, 3000);
-        
-        function updateHistoryUI() {
-            const list = document.getElementById('historyList');
-            if (turnify.turns.length === 0) {
-                list.innerHTML = '<div style="text-align: center; padding: 4rem; color: #999; font-size: 1.5rem;">Sin turnos llamados aún</div>';
-                return;
-            }
-            list.innerHTML = turnify.turns.slice(0,10).map(turn => 
-                `<div style="padding: 1rem; border-bottom: 2px solid #eee; font-weight: 600; display: flex; justify-content: space-between;">
-                    <span style="font-size: 2rem;">${turn.number}</span>
-                    <span style="color: ${turn.status === 'calling' ? '#e74c3c' : turn.status === 'waiting' ? '#f39c12' : '#27ae60'}">${turn.status.toUpperCase()}</span>
-                </div>`
-            ).join('');
-        }
-    </script>
-</body>
-</html>

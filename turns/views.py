@@ -22,6 +22,9 @@ def dashboard(request):
 def create_turn(request):
     number=generate_turn()
     turn=Turn.objects.create(number=number)
+    
+    # Guardar el turno del usuario en la sesión
+    request.session['user_turn'] = number
 
     if db:
         db.collection("turns").document(number).set({
@@ -90,3 +93,85 @@ def get_current_turn(request):
     if turn:
         return Response({"number": turn.number, "status": turn.status})
     return Response({"number": None, "status": "none"})
+
+@api_view(['GET'])
+def get_waiting_turns(request):
+    """Get all turns waiting to be called"""
+    turns = Turn.objects.filter(status="waiting").order_by('created_at')
+    data = [{"number": t.number, "status": t.status} for t in turns]
+    return Response({"turns": data, "count": len(data)})
+
+@api_view(['GET'])
+def get_next_turn(request):
+    """Get the next turn to be called"""
+    turn = Turn.objects.filter(status="waiting").first()
+    if turn:
+        return Response({"number": turn.number, "status": "waiting"})
+    return Response({"number": None, "status": "none"})
+
+@api_view(['POST'])
+def call_specific_turn(request):
+    """Call a specific turn by number"""
+    turn_number = request.data.get('number')
+    turn = Turn.objects.filter(number=turn_number, status="waiting").first()
+    
+    if not turn:
+        return Response({"success": False, "message": "Turn not found or not waiting"}, status=404)
+    
+    # Mark as calling
+    turn.status = "calling"
+    turn.save()
+    
+    if db:
+        db.collection("current").document("active").set({
+            "number": turn.number
+        })
+    
+    return Response({"success": True, "turn": turn.number})
+
+@api_view(['POST'])
+def finish_current_turn(request):
+    """Finish the currently calling turn without calling next"""
+    current = Turn.objects.filter(status="calling").first()
+    if not current:
+        return Response({"success": False, "message": "No active turn to finish"}, status=404)
+    
+    current.status = "completed"
+    current.save()
+    
+    if db:
+        db.collection("turns").document(current.number).update({
+            "status": "completed"
+        })
+        # Clear current turn
+        db.collection("current").document("active").set({"number": None})
+    
+    return Response({"success": True, "completed_turn": current.number})
+
+@api_view(['GET'])
+def get_user_position(request):
+    """Get user's position in queue (stored in session or cookie)"""
+    user_turn = request.session.get('user_turn')
+    if not user_turn:
+        return Response({"position": -1, "turns_ahead": -1, "message": "No turn assigned"})
+    
+    # Find user's turn
+    user_turn_obj = Turn.objects.filter(number=user_turn).first()
+    if not user_turn_obj:
+        return Response({"position": -1, "turns_ahead": -1, "message": "Turn not found"})
+    
+    # Count turns ahead
+    if user_turn_obj.status == "completed":
+        return Response({"position": 0, "turns_ahead": 0, "status": "completed"})
+    
+    turns_ahead = Turn.objects.filter(
+        created_at__lt=user_turn_obj.created_at,
+        status__in=["waiting", "calling"]
+    ).count()
+    
+    return Response({
+        "position": turns_ahead + 1,
+        "turns_ahead": turns_ahead,
+        "status": user_turn_obj.status,
+        "user_turn": user_turn
+    })
