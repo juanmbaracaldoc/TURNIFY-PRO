@@ -16,7 +16,7 @@ import google.genai
 from google.genai import types
 
 # ==================== CONFIGURACIÓN ====================
-API_KEY = "AIzaSyBoOKOeJE0TvlNh17AQ1uEypO_r4GT8bhE"
+API_KEY = "No me permitio subir la api key pero esta ia esta funcional."
 BASE_URL = "http://127.0.0.1:8000"
 
 # La API de Turnify no requiere autenticación (token no usado)
