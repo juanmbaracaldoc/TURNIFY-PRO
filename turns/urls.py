@@ -17,4 +17,6 @@ urlpatterns=[
     path("api/call-specific/",views.call_specific_turn),
     path("api/position/",views.get_user_position),
     path("api/complete/",views.complete_turn),
+    path("api/delete/<str:turn_number>/",views.delete_turn, name='delete_turn'),
+    path("api/reset/",views.reset_turns),
 ]

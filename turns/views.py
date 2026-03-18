@@ -53,8 +53,28 @@ def call_next(request):
 @api_view(['GET'])
 def get_all_turns(request):
     """Baracaldo: Get all turns with their current status"""
+    from django.utils import timezone
+    from datetime import timedelta
+    
     turns = Turn.objects.all().order_by('-created_at')
-    data = [{"number": t.number, "status": t.status, "created_at": t.created_at} for t in turns]
+    now = timezone.now()
+    
+    data = []
+    for t in turns:
+        # Calculate wait time
+        if t.status == 'waiting' or t.status == 'calling':
+            wait_minutes = int((now - t.created_at).total_seconds() / 60)
+            wait_time = f"{wait_minutes} min"
+        else:
+            wait_time = "-"
+        
+        data.append({
+            "number": t.number, 
+            "status": t.status, 
+            "created_at": t.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            "wait_time": wait_time
+        })
+    
     return Response({"turns": data})
 
 @api_view(['POST'])
@@ -86,6 +106,22 @@ def reset_turns(request):
     
     return Response({"success": True, "message": "All turns have been reset"})
 
+@api_view(['DELETE'])
+def delete_turn(request, turn_number):
+    """Delete a specific turn by number"""
+    turn = Turn.objects.filter(number=turn_number).first()
+    
+    if not turn:
+        return Response({"success": False, "message": "Turn not found"}, status=404)
+    
+    turn_number = turn.number
+    turn.delete()
+    
+    if db:
+        db.collection("turns").document(turn_number).delete()
+    
+    return Response({"success": True, "message": f"Turn {turn_number} has been deleted"})
+
 @api_view(['GET'])
 def get_current_turn(request):
     """Baracaldo: Get the currently active turn being called"""
@@ -97,8 +133,20 @@ def get_current_turn(request):
 @api_view(['GET'])
 def get_waiting_turns(request):
     """Get all turns waiting to be called"""
+    from django.utils import timezone
+    
     turns = Turn.objects.filter(status="waiting").order_by('created_at')
-    data = [{"number": t.number, "status": t.status} for t in turns]
+    now = timezone.now()
+    
+    data = []
+    for t in turns:
+        wait_minutes = int((now - t.created_at).total_seconds() / 60)
+        data.append({
+            "number": t.number, 
+            "status": t.status,
+            "wait_time": f"{wait_minutes} min"
+        })
+    
     return Response({"turns": data, "count": len(data)})
 
 @api_view(['GET'])

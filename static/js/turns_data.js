@@ -1,4 +1,4 @@
-// Turnify Pro - Datos Real-Time de Turnos (con Django REST APIs)
+// Turnify Pro - Real-Time Turn Data Management
 
 class TurnifyData {
     constructor() {
@@ -10,25 +10,45 @@ class TurnifyData {
 
     async init() {
         await this.fetchTurns();
-        this.updateStats();
-        this.updateDashboard();
-        setInterval(() => this.fetchTurns(), 3000); // Update cada 3s
+        
+        // Check which page we're on and update accordingly
+        if (document.getElementById('turnsList')) {
+            this.updateDashboard();
+        }
+        if (document.getElementById('currentTurn')) {
+            this.updateEmployee();
+        }
+        
+        // Auto-update every 2 seconds for real-time
+        setInterval(() => this.refresh(), 2000);
+    }
+
+    async refresh() {
+        await this.fetchTurns();
+        
+        // Update whichever page is visible
+        if (document.getElementById('turnsList')) {
+            this.updateDashboard();
+        }
+        if (document.getElementById('currentTurn')) {
+            this.updateEmployee();
+        }
     }
 
     async fetchTurns() {
         try {
-            // Obtener todos los turnos via API
+            // Get all turns from API
             const response = await fetch('/api/all/');
             const data = await response.json();
             this.turns = data.turns || [];
             
-            // Turno actual
+            // Find current turn (status = 'calling')
             const callingTurn = this.turns.find(t => t.status === 'calling');
             this.currentTurn = callingTurn || null;
             
             this.updateStats();
         } catch (error) {
-            console.log('Datos demo activados');
+            console.log('Error fetching turns, using demo data');
             this.useDemoData();
         }
     }
@@ -51,80 +71,212 @@ class TurnifyData {
         this.stats.processed = this.turns.filter(t => t.status === 'completed').length;
     }
 
-    // Update DOM elements
+    // Update Employee Panel
     updateEmployee() {
-        document.getElementById('waitingCount').textContent = this.stats.waiting;
-        document.getElementById('currentTurn').textContent = this.currentTurn?.number || '--';
-        document.getElementById('totalToday').textContent = this.stats.totalToday;
+        // Update stats
+        const waitingEl = document.getElementById('waitingCount');
+        const totalEl = document.getElementById('totalToday');
+        const processedEl = document.getElementById('processedToday');
+        const currentTurnEl = document.getElementById('currentTurn');
+        const currentStatusEl = document.getElementById('currentStatus');
+        const queueCountEl = document.getElementById('queueCount');
+        const waitingQueueEl = document.getElementById('waitingQueue');
+        const callBtnEl = document.getElementById('callBtn');
+        const finishBtnEl = document.getElementById('finishBtn');
+
+        if (waitingEl) waitingEl.textContent = this.stats.waiting;
+        if (totalEl) totalEl.textContent = this.stats.totalToday;
+        if (processedEl) processedEl.textContent = this.stats.processed;
+
+        // Update current turn
+        if (currentTurnEl) {
+            currentTurnEl.textContent = this.currentTurn?.number || '--';
+        }
+        
+        // Update current status
+        if (currentStatusEl) {
+            if (this.currentTurn) {
+                currentStatusEl.innerHTML = `<span style=\"color: #ff6b6b; font-weight: bold;\">🔔 LLAMANDO: ${this.currentTurn.number}</span>`;
+            } else {
+                currentStatusEl.innerHTML = `<span style=\"opacity: 0.8;\">Esperando turno...</span>`;
+            }
+        }
+
+        // Update queue count
+        if (queueCountEl) {
+            queueCountEl.textContent = `${this.stats.waiting} turnos`;
+        }
+
+        // Update waiting queue list
+        if (waitingQueueEl) {
+            const waitingTurns = this.turns.filter(t => t.status === 'waiting').slice(0, 10);
+            
+            if (waitingTurns.length === 0) {
+                waitingQueueEl.innerHTML = '<div class="no-turns"><p>No hay turnos en espera</p></div>';
+            } else {
+                waitingQueueEl.innerHTML = waitingTurns.map(turn => `
+                    <div class=\"turn-item\">
+                        <div class=\"turn-info\">
+                            <span class=\"turn-number\">${turn.number}</span>
+                            <span class=\"turn-time\">${turn.created_at}</span>
+                        </div>
+                        <button class=\"call-turn-btn\" onclick=\"turnify.callSpecificTurn('${turn.number}')\">📢 Llamar</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Update button states
+        if (callBtnEl) {
+            callBtnEl.disabled = this.stats.waiting === 0;
+        }
+        if (finishBtnEl) {
+            finishBtnEl.disabled = !this.currentTurn;
+        }
     }
 
+    // Update Dashboard
     updateDashboard() {
         const tbody = document.getElementById('turnsList');
         if (!tbody) return;
-        
-        tbody.innerHTML = this.turns
-            .sort((a,b) => a.number.localeCompare(b.number))
-            .map(turn => {
-                const statusClass = turn.status === 'waiting' ? 'turn-waiting' : 
-                                  turn.status === 'calling' ? 'turn-calling' : '';
-                return `
-                    <tr>
-                        <td style="font-size: 1.5rem; font-weight: 700; color: var(--dark);">${turn.number}</td>
-                        <td><span class="status-badge ${statusClass}">${turn.status.toUpperCase()}</span></td>
-                        <td style="font-family: monospace;">${turn.created_at}</td>
-                        <td><strong>${turn.wait_time}</strong></td>
-                        <td>
-                            ${turn.status === 'waiting' ? 
-                                '<button class="btn-small" onclick="turnify.callSpecificTurn(\''+turn.number+'\')">📢 LLAMAR</button>' : 
-                                '—'}
-                        </td>
-                    </tr>`;
-            }).join('');
 
-        document.getElementById('totalTurns').textContent = this.stats.totalToday;
-        document.getElementById('waitingTurns').textContent = this.stats.waiting;
-        document.getElementById('todayProcessed').textContent = this.stats.processed;
-        document.getElementById('liveTurn').textContent = this.currentTurn?.number || 'SIN TURNO';
+        // Sort turns: calling first, then waiting, then completed
+        const statusOrder = { 'calling': 0, 'waiting': 1, 'completed': 2 };
+        const sortedTurns = [...this.turns].sort((a, b) => {
+            return (statusOrder[a.status] || 3) - (statusOrder[b.status] || 3);
+        });
+
+        tbody.innerHTML = sortedTurns.map(turn => {
+            const statusClass = turn.status === 'waiting' ? 'turn-waiting' : 
+                              turn.status === 'calling' ? 'turn-calling' : 
+                              'turn-completed';
+            const statusLabel = turn.status === 'calling' ? 'LLAMANDO' :
+                               turn.status === 'waiting' ? 'ESPERANDO' :
+                               'COMPLETADO';
+            return `
+                <tr>
+                    <td style=\"font-size: 1.5rem; font-weight: 700; color: var(--dark);\">${turn.number}</td>
+                    <td><span class=\"status-badge ${statusClass}\">${statusLabel}</span></td>
+                    <td style=\"font-family: monospace;\">${turn.created_at || '-'}</td>
+                    <td><strong>${turn.wait_time || '0 min'}</strong></td>
+                </tr>`;
+        }).join('');
+
+        // Update stats cards
+        const totalTurnsEl = document.getElementById('totalTurns');
+        const waitingTurnsEl = document.getElementById('waitingTurns');
+        const processedTodayEl = document.getElementById('processedToday');
+        const liveTurnEl = document.getElementById('liveTurn');
+        const nextTurnEl = document.getElementById('nextTurn');
+
+        if (totalTurnsEl) totalTurnsEl.textContent = this.stats.totalToday;
+        if (waitingTurnsEl) waitingTurnsEl.textContent = this.stats.waiting;
+        if (processedTodayEl) processedTodayEl.textContent = this.stats.processed;
+        
+        // Update live turn display
+        if (liveTurnEl) {
+            liveTurnEl.textContent = this.currentTurn?.number || 'SIN TURNO';
+        }
+        
+        // Update next turn
+        if (nextTurnEl) {
+            const nextTurn = this.turns.find(t => t.status === 'waiting');
+            nextTurnEl.textContent = nextTurn?.number || 'NO HAY';
+        }
     }
 
-    callSpecificTurn(number) {
-        if (confirm(`¿Llamar turno ${number}?`)) {
-            fetch('/api/call/', {method: 'POST'})
-                .then(() => this.fetchTurns())
-                .catch(() => alert('Error al llamar turno'));
+    // Call next turn in queue
+    async callNextTurn() {
+        try {
+            const response = await fetch('/api/call/', { method: 'POST' });
+            const data = await response.json();
+            
+            if (data.turn) {
+                await this.fetchTurns();
+                this.updateEmployee();
+                this.updateDashboard();
+            } else {
+                alert('No hay turnos en espera');
+            }
+        } catch (error) {
+            console.error('Error calling next turn:', error);
+            alert('Error al llamar turno');
+        }
+    }
+
+    // Call a specific turn
+    async callSpecificTurn(number) {
+        try {
+            const response = await fetch('/api/call-specific/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ number: number })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                await this.fetchTurns();
+                this.updateEmployee();
+                this.updateDashboard();
+            } else {
+                alert(data.message || 'Error al llamar turno');
+            }
+        } catch (error) {
+            console.error('Error calling specific turn:', error);
+            alert('Error al llamar turno');
+        }
+    }
+
+    // Finish current turn
+    async finishCurrentTurn() {
+        try {
+            const response = await fetch('/api/finish/', { method: 'POST' });
+            const data = await response.json();
+            
+            if (data.success) {
+                await this.fetchTurns();
+                this.updateEmployee();
+                this.updateDashboard();
+            } else {
+                alert(data.message || 'No hay turno activo');
+            }
+        } catch (error) {
+            console.error('Error finishing turn:', error);
+            alert('Error al terminar turno');
         }
     }
 }
 
-// Inicializar global
+// Initialize global instance
 const turnify = new TurnifyData();
 
-// Status badges CSS (inline para demo)
+// Status badges CSS
 const style = document.createElement('style');
 style.textContent = `
-.status-badge {
-    padding: 0.4rem 1rem;
-    border-radius: 25px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-.status-badge.turn-waiting { background: linear-gradient(45deg, #f39c12, #e67e22); color: white; }
-.status-badge.turn-calling { 
-    background: linear-gradient(45deg, #e74c3c, #c0392b); 
-    color: white; 
-    animation: pulse 1.5s infinite;
-}
-.completed { background: #27ae60; color: white; }
-.btn-small {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-    background: var(--success);
-    color: white;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-}
+    .status-badge {
+        padding: 0.4rem 1rem;
+        border-radius: 25px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .status-badge.turn-waiting { 
+        background: linear-gradient(45deg, #f39c12, #e67e22); 
+        color: white; 
+    }
+    .status-badge.turn-calling { 
+        background: linear-gradient(45deg, #e74c3c, #c0392b); 
+        color: white; 
+        animation: pulse 1.5s infinite;
+    }
+    .status-badge.turn-completed { 
+        background: #27ae60; 
+        color: white; 
+    }
+    .turn-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+    }
 `;
 document.head.appendChild(style);
-

@@ -1,6 +1,6 @@
 """
 AI Assistant para Turnify - Asistente virtual con herramientas de IA
-Este archivo permite al asistente de IA consultar, llamar y completar turnos
+Este archivo permite al asistente de IA consultar, llamar, completar y eliminar turnos
 """
 import requests
 import time
@@ -16,7 +16,7 @@ import google.genai
 from google.genai import types
 
 # ==================== CONFIGURACIÓN ====================
-API_KEY = "No me permitio subir la api key pero esta ia esta funcional."
+API_KEY = "TU_API_KEY_DE_GEMINI_AQUI"  # Reemplaza con tu API Key de Gemini
 BASE_URL = "http://127.0.0.1:8000"
 
 # La API de Turnify no requiere autenticación (token no usado)
@@ -110,6 +110,38 @@ def crear_turno(token: str, nombre_cliente: str = None):
         return {"error": str(e)}
 
 
+def eliminar_turno(token: str, turno_id: str = None):
+    """Elimina un turno específico del sistema por su número"""
+    print(f"\n🗑️ Eliminando turno...")
+    
+    if not turno_id:
+        return {"error": "Se requiere el número del turno a eliminar"}
+    
+    url = f"{BASE_URL}/api/delete/{turno_id}/"
+    
+    try:
+        res = requests.delete(url)
+        if res.status_code == 200:
+            return res.json()
+        else:
+            return {"error": f"HTTP {res.status_code}", "detail": res.text}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def reset_turns(token: str):
+    """Elimina todos los turnos del sistema (función de administrador)"""
+    print(f"\n⚠️ Reiniciando todos los turnos...")
+    
+    url = f"{BASE_URL}/api/reset/"
+    
+    try:
+        res = requests.post(url)
+        return res.json() if res.status_code == 200 else {"error": f"HTTP {res.status_code}"}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 # ==================== 2. HERRAMIENTAS PARA LA IA ====================
 
 def get_herramientas():
@@ -148,6 +180,20 @@ def get_herramientas():
                         properties={"nombre_cliente": types.Schema(type="STRING", description="Nombre del cliente")},
                         required=[]
                     )
+                ),
+                types.FunctionDeclaration(
+                    name="eliminar_turno",
+                    description="Elimina un turno específico del sistema por su número",
+                    parameters=types.Schema(
+                        type="OBJECT",
+                        properties={"turno_id": types.Schema(type="STRING", description="Número del turno a eliminar (ej: A001)")},
+                        required=["turno_id"]
+                    )
+                ),
+                types.FunctionDeclaration(
+                    name="reset_turns",
+                    description="Elimina todos los turnos del sistema (función de administrador)",
+                    parameters=types.Schema(type="OBJECT", properties={}, required=[])
                 )
             ]
         )
@@ -166,8 +212,10 @@ def main():
     print("📋 COMANDOS DISPONIBLES:")
     print("   • consultar turnos   - Ver todos los turnos")
     print("   • llamar turno      - Llamar el siguiente turno")
-    print("   • completar turno  - Completar el turno actual")
+    print("   • completar turno   - Completar el turno actual")
     print("   • crear turno       - Crear un nuevo turno")
+    print("   • eliminar turno    - Eliminar un turno específico")
+    print("   • reset turnos      - Eliminar todos los turnos")
     print("   • cambiar token     - Cambiar el token")
     print("   • ayuda             - Ver comandos")
     print("   • salir             - Salir del programa")
@@ -188,12 +236,14 @@ def main():
         if user_input.lower() in ['ayuda', 'help']:
             print("""
 📖 COMANDOS:
-  • consultar turnos   - Ver todos los turnos
-  • llamar turno      - Llamar el siguiente turno
-  • completar turno  - Completar el turno actual
-  • crear turno      - Crear un nuevo turno
-  • cambiar token    - Cambiar el token de autenticación
-  • salir            - Salir del programa
+  • consultar turnos    - Ver todos los turnos
+  • llamar turno        - Llamar el siguiente turno
+  • completar turno     - Completar el turno actual
+  • crear turno         - Crear un nuevo turno
+  • eliminar turno      - Eliminar un turno específico
+  • reset turnos        - Eliminar todos los turnos (admin)
+  • cambiar token       - Cambiar el token de autenticación
+  • salir              - Salir del programa
             """)
             continue
         
@@ -260,6 +310,24 @@ def main():
             print(f"\n🎫 RESULTADO: {resultado}")
             continue
         
+        if user_input.lower() == 'eliminar turno':
+            numero = input("Número del turno a eliminar (ej: A001): ").strip()
+            if numero:
+                resultado = eliminar_turno(token, numero)
+                print(f"\n🗑️ RESULTADO: {resultado}")
+            else:
+                print("⚠️ Debes especificar el número del turno")
+            continue
+        
+        if user_input.lower() == 'reset turnos':
+            confirmacion = input("⚠️ ¿Estás seguro de eliminar TODOS los turnos? (escribe 'si' para confirmar): ").strip().lower()
+            if confirmacion == 'si':
+                resultado = reset_turns(token)
+                print(f"\n⚠️ RESULTADO: {resultado}")
+            else:
+                print("✅ Cancelado")
+            continue
+        
         # Si no es un comando directo, usar IA
         prompt = f"""
 Eres un asistente para el sistema de turnos Turnify.
@@ -268,11 +336,13 @@ BASE_URL: {BASE_URL}
 
 El usuario dice: {user_input}
 
-Si el usuario quiere consultar, llamar, completar o crear un turno, dime "COMANDO: [comando]" donde [comando] es:
+Si el usuario quiere consultar, llamar, completar, crear o eliminar un turno, dime "COMANDO: [comando]" donde [comando] es:
 - "consultar turnos"
 - "llamar turno" 
 - "completar turno"
 - "crear turno [nombre]"
+- "eliminar turno [numero]"
+- "reset turnos"
 
 Responde de forma breve y amigable en español.
 """
@@ -305,6 +375,10 @@ Responde de forma breve y amigable en español.
                     resultado = completar_turno(token)
                 elif nombre_func == "crear_turno":
                     resultado = crear_turno(token, args.get("nombre_cliente"))
+                elif nombre_func == "eliminar_turno":
+                    resultado = eliminar_turno(token, args.get("turno_id"))
+                elif nombre_func == "reset_turns":
+                    resultado = reset_turns(token)
                 else:
                     resultado = {"error": f"Función desconocida: {nombre_func}"}
                 

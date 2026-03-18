@@ -243,3 +243,81 @@
         }
     </style>
 </head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem; text-align: center;">
+            <h1 style="font-size: 2.5rem; margin: 0; color: white;">👨‍💼 PANEL DE EMPLEADO</h1>
+            <div style="font-size: 1.2rem; opacity: 0.9; margin-top: 0.5rem; color: white;">Turnify Pro - Gestión de Turnos</div>
+        </header>
+
+        <!-- Current Turn Section -->
+        <div class="current-turn-section">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🎫 TURNO ACTUAL</div>
+            <div id="currentTurn" class="turno-actual-panel">--</div>
+            <div id="currentStatus" class="estado-actual">
+                <span style="opacity: 0.8;">Esperando turno...</span>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <h2 style="margin: 0 0 1.5rem 0; color: var(--dark);">🎛️ Panel de Control</h2>
+            <div class="control-buttons">
+                <button id="callBtn" class="control-btn call-btn" onclick="turnify.callNextTurn()">
+                    <span style="font-size: 2rem;">📢</span>
+                    <span>LLAMAR SIGUIENTE</span>
+                </button>
+                <button id="finishBtn" class="control-btn finish-btn" onclick="turnify.finishCurrentTurn()" disabled>
+                    <span style="font-size: 2rem;">✅</span>
+                    <span>TERMINAR TURNO</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="stats-section">
+            <div class="stat-card">
+                <div id="waitingCount" class="stat-number">0</div>
+                <div class="stat-label">Turnos Esperando</div>
+            </div>
+            <div class="stat-card">
+                <div id="totalToday" class="stat-number">0</div>
+                <div class="stat-label">Total Hoy</div>
+            </div>
+            <div class="stat-card">
+                <div id="processedToday" class="stat-number">0</div>
+                <div class="stat-label">Procesados</div>
+            </div>
+        </div>
+
+        <!-- Waiting Queue -->
+        <div class="waiting-queue">
+            <div class="queue-header">
+                <h2 class="queue-title">📋 Cola de Espera</h2>
+                <span id="queueCount" class="queue-count">0 turnos</span>
+            </div>
+            <div id="waitingQueue">
+                <div class="no-turns">
+                    <p>No hay turnos en espera</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/turns_data.js"></script>
+    <script>
+        // Employee page initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-update every 2 seconds for real-time
+            setInterval(() => {
+                turnify.fetchTurns();
+                turnify.updateEmployee();
+            }, 2000);
+            
+            // Initial fetch
+            turnify.fetchTurns();
+        });
+    </script>
+</body>
+</html>

@@ -105,14 +105,14 @@
 
     <script src="/static/js/turns_data.js"></script>
     <script>
-        // Auto update cada 2 segundos
-        setInterval(() => {
-            turnify.fetchTurns();
-            turnify.updateDashboard();
-        }, 2000);
-        
-        // Inicial
-        turnify.fetchTurns();
+        // Dashboard initialization - uses the global turnify instance
+        document.addEventListener('DOMContentLoaded', function() {
+            // The turnify object already has auto-refresh built in
+            // But we can also manually trigger updates if needed
+            
+            // Initial update is handled by turnify.init()
+            console.log('Dashboard loaded, real-time updates active');
+        });
     </script>
 </body>
 </html>
