@@ -185,52 +185,15 @@
         </div>
     </div>
 
+    <script src="/static/js/websocket.js"></script>
     <script>
         function updateClock() {
             const now = new Date();
             document.getElementById('timer').textContent = now.toLocaleTimeString('es-ES');
         }
 
-        function updateScreen() {
-            // Get current turn being served
-            fetch('/api/current/')
-                .then(r => r.json())
-                .then(d => {
-                    if (d.number) {
-                        document.getElementById('currentNumber').textContent = d.number;
-                    } else {
-                        document.getElementById('currentNumber').textContent = '---';
-                    }
-                })
-                .catch(e => console.error('Error fetching current:', e));
-
-            // Get waiting turns
-            fetch('/api/waiting/')
-                .then(r => r.json())
-                .then(d => {
-                    document.getElementById('waitingCount').textContent = d.count;
-                    
-                    let html = '';
-                    if (d.turns.length === 0) {
-                        html = '<div class="empty-state">✓ Sin turnos esperando</div>';
-                    } else {
-                        // Show next 5 turns
-                        d.turns.slice(0, 5).forEach(turn => {
-                            html += `<div class="next-turn-number">${turn.number}</div>`;
-                        });
-                    }
-                    document.getElementById('nextTurnsDisplay').innerHTML = html;
-                })
-                .catch(e => console.error('Error fetching waiting:', e));
-        }
-
-        // Update clock every second
         setInterval(updateClock, 1000);
         updateClock();
-
-        // Update screen data every 2 seconds
-        updateScreen();
-        setInterval(updateScreen, 2000);
     </script>
 </body>
 </html>

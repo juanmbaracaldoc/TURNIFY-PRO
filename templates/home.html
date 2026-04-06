@@ -294,10 +294,71 @@
         </div>
     </div>
 
+    <script src="/static/js/websocket.js"></script>
     <script>
         let userTurn = null;
         let positionCheckInterval = null;
         let alertShown = false;
+
+        function updateUserPositionWS(data) {
+            const posCard = document.getElementById('positionCard');
+            const alertContainer = document.getElementById('alertContainer');
+
+            if (data.status === 'completed') {
+                document.getElementById('completedAlert').style.display = 'block';
+                document.getElementById('positionCard').style.display = 'none';
+                alertContainer.innerHTML = '';
+                if (positionCheckInterval) clearInterval(positionCheckInterval);
+                return;
+            }
+
+            document.getElementById('positionCard').style.display = 'block';
+            document.getElementById('completedAlert').style.display = 'none';
+
+            const turnsAhead = data.turns_ahead;
+            document.getElementById('positionNum').textContent = data.position;
+
+            let statusHTML = '';
+            let alertHTML = '';
+
+            if (turnsAhead === 0) {
+                statusHTML = '<strong style="color: var(--success); font-size: 1.3rem;">🎯 ¡ES TU TURNO AHORA!</strong>';
+                posCard.style.background = 'linear-gradient(135deg, var(--success), #27ae60)';
+                playAlertSound();
+            } else if (turnsAhead === 1) {
+                statusHTML = '<strong style="color: var(--warning);">⚠️ Siguiente turno (falta 1)</strong>';
+                posCard.style.background = 'linear-gradient(135deg, var(--warning), #e67e22)';
+            } else if (turnsAhead === 2) {
+                statusHTML = `<strong style="color: var(--warning);">Faltan ${turnsAhead} turnos</strong>`;
+                posCard.style.background = 'linear-gradient(135deg, var(--accent), #1e8bc3)';
+                
+                if (!alertShown) {
+                    alertHTML = `
+                        <div class="alert-box alert-warning">
+                            <div class="alert-icon">⚠️</div>
+                            <div class="alert-text">¡Ya casi es tu turno!</div>
+                            <div class="alert-subtext">Faltan solo 2 personas</div>
+                        </div>
+                    `;
+                    alertShown = true;
+                    playAlertSound();
+                }
+            } else {
+                statusHTML = `<strong>Faltan ${turnsAhead} turnos para ti</strong>`;
+                posCard.style.background = 'linear-gradient(135deg, var(--accent), #1e8bc3)';
+            }
+
+            document.getElementById('positionDetail').innerHTML = statusHTML;
+            document.getElementById('statusText').innerHTML = 
+                `<strong>Posición: #${data.position}</strong><br>Turnos adelante: ${turnsAhead}`;
+            
+            if (alertHTML) {
+                alertContainer.innerHTML = alertHTML;
+            } else if (turnsAhead > 2) {
+                alertShown = false;
+                alertContainer.innerHTML = '';
+            }
+        }
 
         function getTurn() {
             const btn = document.getElementById('getTurnBtn');
@@ -317,7 +378,7 @@
                     document.getElementById('modalTurnNum').textContent = userTurn;
                     
                     openModal();
-                    startPositionTracking();
+                    turnify.send('get_position', { user_turn: userTurn });
                 })
                 .catch(err => {
                     alert('❌ Error al solicitar turno. Intenta de nuevo.');
@@ -337,9 +398,15 @@
         }
 
         function startPositionTracking() {
-            updateUserPosition();
+            if (userTurn) {
+                turnify.send('get_position', { user_turn: userTurn });
+            }
             if (positionCheckInterval) clearInterval(positionCheckInterval);
-            positionCheckInterval = setInterval(updateUserPosition, 1000);
+            positionCheckInterval = setInterval(() => {
+                if (userTurn) {
+                    turnify.send('get_position', { user_turn: userTurn });
+                }
+            }, 2000);
         }
 
         function updateUserPosition() {

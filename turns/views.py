@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from .models import Turn
 from .utils import generate_turn
 from .firebase_config import db
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 def home(request):
     return render(request,"home.html")
@@ -32,6 +34,7 @@ def create_turn(request):
         "status":"waiting"
         })
 
+    broadcast_turn_update()
     return Response({"number":number})
 
 @api_view(['POST'])
@@ -48,6 +51,7 @@ def call_next(request):
         "number":turn.number
         })
 
+    broadcast_turn_update()
     return Response({"turn":turn.number})
 
 @api_view(['GET'])
@@ -91,6 +95,7 @@ def complete_turn(request):
                 "status": "completed"
             })
         
+        broadcast_turn_update()
         return Response({"success": True, "message": f"Turn {turn_number} completed"})
     return Response({"success": False, "message": "Turn not found"}, status=404)
 
@@ -104,6 +109,7 @@ def reset_turns(request):
         for doc in docs:
             doc.reference.delete()
     
+    broadcast_turn_update()
     return Response({"success": True, "message": "All turns have been reset"})
 
 @api_view(['DELETE'])
@@ -120,6 +126,7 @@ def delete_turn(request, turn_number):
     if db:
         db.collection("turns").document(turn_number).delete()
     
+    broadcast_turn_update()
     return Response({"success": True, "message": f"Turn {turn_number} has been deleted"})
 
 @api_view(['GET'])
@@ -175,6 +182,7 @@ def call_specific_turn(request):
             "number": turn.number
         })
     
+    broadcast_turn_update()
     return Response({"success": True, "turn": turn.number})
 
 @api_view(['POST'])
@@ -194,6 +202,7 @@ def finish_current_turn(request):
         # Clear current turn
         db.collection("current").document("active").set({"number": None})
     
+    broadcast_turn_update()
     return Response({"success": True, "completed_turn": current.number})
 
 @api_view(['GET'])
@@ -223,3 +232,41 @@ def get_user_position(request):
         "status": user_turn_obj.status,
         "user_turn": user_turn
     })
+
+def broadcast_turn_update():
+    try:
+        channel_layer = get_channel_layer()
+        if channel_layer:
+            from django.utils import timezone
+            from datetime import timedelta
+            
+            turns = Turn.objects.all().order_by('-created_at')
+            now = timezone.now()
+            
+            data = []
+            for t in turns:
+                if t.status == 'waiting' or t.status == 'calling':
+                    wait_minutes = int((now - t.created_at).total_seconds() / 60)
+                    wait_time = f"{wait_minutes} min"
+                else:
+                    wait_time = "-"
+                data.append({
+                    "number": t.number,
+                    "status": t.status,
+                    "created_at": t.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                    "wait_time": wait_time
+                })
+            
+            current_turn = Turn.objects.filter(status="calling").first()
+            current_data = {"number": current_turn.number, "status": current_turn.status} if current_turn else {"number": None, "status": "none"}
+            
+            async_to_sync(channel_layer.group_send)("turns_updates", {
+                "type": "turn_update",
+                "data": {"type": "all_turns", "turns": data}
+            })
+            async_to_sync(channel_layer.group_send)("turns_updates", {
+                "type": "turn_update",
+                "data": {"type": "current_turn", **current_data}
+            })
+    except Exception as e:
+        print(f"Broadcast error: {e}")

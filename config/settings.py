@@ -6,18 +6,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'dev'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
-'django.contrib.admin',
-'django.contrib.auth',
-'django.contrib.contenttypes',
-'django.contrib.sessions',
-'django.contrib.messages',
-'django.contrib.staticfiles',
-'rest_framework',
-'corsheaders',
-'turns',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'rest_framework',
+    'corsheaders',
+    'channels',
+    'turns',
 ]
 
 MIDDLEWARE = [
@@ -62,3 +63,12 @@ STATICFILES_DIRS=[BASE_DIR/'static']
 
 DEFAULT_AUTO_FIELD='django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS=True
+
+ASGI_APPLICATION = 'config.asgi.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
+
+CORS_ALLOW_WEBSOCKET_ORIGINS = ["*"]
