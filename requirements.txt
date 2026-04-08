@@ -8,3 +8,6 @@ requests
 google-genai
 channels
 daphne
+openpyxl
+pandas
+whitenoise

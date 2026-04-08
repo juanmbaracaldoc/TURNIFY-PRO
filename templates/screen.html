@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pantalla Digital - Turnify Pro</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎫</text></svg>">
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
         body {
@@ -186,6 +187,7 @@
     </div>
 
     <script src="/static/js/websocket.js"></script>
+    <script src="/static/js/turns_data.js"></script>
     <script>
         function updateClock() {
             const now = new Date();
@@ -194,6 +196,25 @@
 
         setInterval(updateClock, 1000);
         updateClock();
+
+        // Update screen from turnify data
+        document.addEventListener('DOMContentLoaded', function() {
+            setInterval(() => {
+                const waiting = turnify.stats.waiting;
+                const current = turnify.currentTurn;
+                const next = turnify.turns.find(t => t.status === 'waiting');
+
+                document.getElementById('waitingCount').textContent = waiting;
+                if (current) {
+                    document.getElementById('currentNumber').textContent = current.number;
+                }
+                
+                const nextDisplay = document.getElementById('nextTurnsDisplay');
+                if (nextDisplay && next) {
+                    nextDisplay.innerHTML = `<div class="next-turn-number">${next.number}</div>`;
+                }
+            }, 1000);
+        });
     </script>
 </body>
 </html>

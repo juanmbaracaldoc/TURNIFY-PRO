@@ -19,4 +19,8 @@ urlpatterns=[
     path("api/complete/",views.complete_turn),
     path("api/delete/<str:turn_number>/",views.delete_turn, name='delete_turn'),
     path("api/reset/",views.reset_turns),
+    path("api/statistics/",views.get_statistics),
+    path("api/reports/",views.get_reports),
+    path("api/export/csv/",views.export_csv),
+    path("api/export/excel/",views.export_excel),
 ]

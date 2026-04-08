@@ -11,7 +11,6 @@ class TurnifyData {
     async init() {
         await this.fetchTurns();
         
-        // Check which page we're on and update accordingly
         if (document.getElementById('turnsList')) {
             this.updateDashboard();
         }
@@ -19,37 +18,90 @@ class TurnifyData {
             this.updateEmployee();
         }
         
-        // Auto-update every 2 seconds for real-time
+        // Polling as primary (more reliable)
         setInterval(() => this.refresh(), 2000);
     }
 
     async refresh() {
         await this.fetchTurns();
         
-        // Update whichever page is visible
         if (document.getElementById('turnsList')) {
             this.updateDashboard();
         }
         if (document.getElementById('currentTurn')) {
             this.updateEmployee();
         }
+        
+        // Also trigger WebSocket update if connected
+        if (typeof turnify !== 'undefined' && turnify.ws && turnify.ws.readyState === WebSocket.OPEN) {
+            turnify.send('get_all');
+        }
     }
 
     async fetchTurns() {
         try {
-            // Get all turns from API
             const response = await fetch('/api/all/');
+            if (!response.ok) throw new Error('API error');
             const data = await response.json();
             this.turns = data.turns || [];
             
-            // Find current turn (status = 'calling')
             const callingTurn = this.turns.find(t => t.status === 'calling');
             this.currentTurn = callingTurn || null;
             
             this.updateStats();
+            this.updateUI();
         } catch (error) {
-            console.log('Error fetching turns, using demo data');
-            this.useDemoData();
+            console.log('Error fetching turns:', error);
+            // NO usar datos de demo - dejar vacío
+            this.turns = [];
+            this.currentTurn = null;
+            this.stats = { waiting: 0, totalToday: 0, processed: 0 };
+            this.updateStats();
+        }
+    }
+
+    updateStats() {
+        this.stats.waiting = this.turns.filter(t => t.status === 'waiting').length;
+        this.stats.totalToday = this.turns.length;
+        this.stats.processed = this.turns.filter(t => t.status === 'completed').length;
+    }
+
+    updateUI() {
+        // Update screen
+        if (document.getElementById('currentNumber')) {
+            const current = this.turns.find(t => t.status === 'calling');
+            document.getElementById('currentNumber').textContent = current?.number || '---';
+        }
+        if (document.getElementById('waitingCount')) {
+            document.getElementById('waitingCount').textContent = this.stats.waiting;
+        }
+        
+        // Update screen next turns
+        const nextDisplay = document.getElementById('nextTurnsDisplay');
+        if (nextDisplay) {
+            const waitingTurns = this.turns.filter(t => t.status === 'waiting').slice(0, 5);
+            if (waitingTurns.length === 0) {
+                nextDisplay.innerHTML = '<div class="empty-state">✓ Sin turnos esperando</div>';
+            } else {
+                nextDisplay.innerHTML = waitingTurns.map(t => `<div class="next-turn-number">${t.number}</div>`).join('');
+            }
+        }
+    }
+
+    handleWebSocketUpdate(data) {
+        if (data.type === 'all_turns' && data.turns) {
+            this.turns = data.turns;
+            const callingTurn = this.turns.find(t => t.status === 'calling');
+            this.currentTurn = callingTurn || null;
+            this.updateStats();
+            
+            if (document.getElementById('turnsList')) {
+                this.updateDashboard();
+            }
+            if (document.getElementById('currentTurn')) {
+                this.updateEmployee();
+            }
+            this.updateUI();
         }
     }
 
@@ -96,9 +148,9 @@ class TurnifyData {
         // Update current status
         if (currentStatusEl) {
             if (this.currentTurn) {
-                currentStatusEl.innerHTML = `<span style=\"color: #ff6b6b; font-weight: bold;\">🔔 LLAMANDO: ${this.currentTurn.number}</span>`;
+                currentStatusEl.innerHTML = `<span style="color: #333; font-weight: bold;">🔔 LLAMANDO: ${this.currentTurn.number}</span>`;
             } else {
-                currentStatusEl.innerHTML = `<span style=\"opacity: 0.8;\">Esperando turno...</span>`;
+                currentStatusEl.innerHTML = `<span style="color: #666;">Esperando turno...</span>`;
             }
         }
 
@@ -112,15 +164,15 @@ class TurnifyData {
             const waitingTurns = this.turns.filter(t => t.status === 'waiting').slice(0, 10);
             
             if (waitingTurns.length === 0) {
-                waitingQueueEl.innerHTML = '<div class="no-turns"><p>No hay turnos en espera</p></div>';
+                waitingQueueEl.innerHTML = '<div class="no-turns"><p style="color: #333;">No hay turnos en espera</p></div>';
             } else {
                 waitingQueueEl.innerHTML = waitingTurns.map(turn => `
-                    <div class=\"turn-item\">
-                        <div class=\"turn-info\">
-                            <span class=\"turn-number\">${turn.number}</span>
-                            <span class=\"turn-time\">${turn.created_at}</span>
+                    <div class="turn-item">
+                        <div class="turn-info">
+                            <span class="turn-number" style="color: #333;">${turn.number}</span>
+                            <span class="turn-time" style="color: #666;">${turn.created_at}</span>
                         </div>
-                        <button class=\"call-turn-btn\" onclick=\"turnify.callSpecificTurn('${turn.number}')\">📢 Llamar</button>
+                        <button class="call-turn-btn" onclick="turnify.callSpecificTurn('${turn.number}')">📢 Llamar</button>
                     </div>
                 `).join('');
             }
@@ -243,6 +295,25 @@ class TurnifyData {
         } catch (error) {
             console.error('Error finishing turn:', error);
             alert('Error al terminar turno');
+        }
+    }
+
+    // Send WebSocket message
+    send(action, data = {}) {
+        if (websocketManager && websocketManager.send) {
+            websocketManager.send(action, data);
+        }
+    }
+
+    // Get user position via REST API (fallback when WebSocket fails)
+    async getUserPosition(userTurn) {
+        try {
+            const response = await fetch('/api/position/');
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error getting position:', error);
+            return null;
         }
     }
 }

@@ -4,8 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PANEL DE EMPLEADO - Turnify Pro</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎫</text></svg>">
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
+        :root {
+            --lighter: #ffffff;
+            --shadow-xl: 0 15px 35px rgba(0,0,0,0.2);
+            --gradient-success: linear-gradient(135deg, #27ae60, #2ecc71);
+            --gradient-danger: linear-gradient(135deg, #e74c3c, #c0392b);
+            --gradient-primary: linear-gradient(135deg, #3498db, #2980b9);
+            --gray-50: #f9f9f9;
+            --accent: #3498db;
+            --shadow: 0 5px 15px rgba(0,0,0,0.1);
+            --dark: #333;
+            --gray-500: #666;
+            --gray-600: #555;
+            --radius: 12px;
+        }
         .current-turn-section {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -129,7 +144,7 @@
         .queue-title {
             font-size: 1.8rem;
             font-weight: 700;
-            color: var(--dark);
+            color: #333;
             margin: 0;
         }
 
@@ -163,11 +178,11 @@
         .turn-number {
             font-size: 1.5rem;
             font-weight: 700;
-            color: var(--dark);
+            color: #333;
         }
 
         .turn-time {
-            color: var(--gray-500);
+            color: #666;
             font-size: 0.9rem;
         }
 
@@ -214,7 +229,7 @@
         }
 
         .stat-label {
-            color: var(--gray-600);
+            color: #555;
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -223,7 +238,7 @@
 
         .no-turns {
             text-align: center;
-            color: var(--gray-500);
+            color: #333;
             padding: 3rem;
             font-size: 1.2rem;
         }
@@ -246,7 +261,7 @@
 <body>
     <div class="dashboard">
         <!-- Header -->
-        <header style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem; text-align: center;">
+        <header style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; text-align: center;">
             <h1 style="font-size: 2.5rem; margin: 0; color: white;">👨‍💼 PANEL DE EMPLEADO</h1>
             <div style="font-size: 1.2rem; opacity: 0.9; margin-top: 0.5rem; color: white;">Turnify Pro - Gestión de Turnos</div>
         </header>
@@ -262,7 +277,7 @@
 
         <!-- Control Panel -->
         <div class="control-panel">
-            <h2 style="margin: 0 0 1.5rem 0; color: var(--dark);">🎛️ Panel de Control</h2>
+            <h2 style="margin: 0 0 1.5rem 0; color: #333;">🎛️ Panel de Control</h2>
             <div class="control-buttons">
                 <button id="callBtn" class="control-btn call-btn" onclick="turnify.callNextTurn()">
                     <span style="font-size: 2rem;">📢</span>
@@ -305,6 +320,7 @@
         </div>
     </div>
 
+    <script src="/static/js/websocket.js"></script>
     <script src="/static/js/turns_data.js"></script>
     <script>
         // Employee page initialization

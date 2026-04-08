@@ -6,6 +6,8 @@ from django.utils import timezone
 from datetime import timedelta
 
 class TurnConsumer(AsyncWebsocketConsumer):
+    # Se ejecuta cuando un cliente se conecta al WebSocket
+    # Une al cliente al grupo de actualizaciones de turnos
     async def connect(self):
         self.room_group_name = 'turns_updates'
         await self.channel_layer.group_add(
@@ -15,12 +17,16 @@ class TurnConsumer(AsyncWebsocketConsumer):
         await self.accept()
         await self.send_current_turn()
 
+    # Se ejecuta cuando el cliente se desconecta
+    # Remueve al cliente del grupo de actualizaciones
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
         )
 
+    # Recibe mensajes del cliente WebSocket
+    # Acciones: 'get_current', 'get_all', 'get_waiting', 'get_position'
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get('action')
@@ -35,6 +41,7 @@ class TurnConsumer(AsyncWebsocketConsumer):
             user_turn = data.get('user_turn')
             await self.send_user_position(user_turn)
 
+    # Consulta y envia el turno actualmente en atencion (status: calling)
     async def send_current_turn(self):
         from turns.models import Turn
         turn = await self.get_current_turn()
@@ -51,6 +58,8 @@ class TurnConsumer(AsyncWebsocketConsumer):
                 'status': 'none'
             }))
 
+    # Decorador para convertir consultas sincronas a asincronas
+    # Busca el primer turno con status 'calling'
     @database_sync_to_async
     def get_current_turn(self):
         from turns.models import Turn
@@ -59,6 +68,7 @@ class TurnConsumer(AsyncWebsocketConsumer):
             return {'number': turn.number, 'status': turn.status}
         return None
 
+    # Consulta y envia todos los turnos del dia actual
     async def send_all_turns(self):
         turns = await self.get_all_turns_data()
         await self.send(text_data=json.dumps({
@@ -66,10 +76,14 @@ class TurnConsumer(AsyncWebsocketConsumer):
             'turns': turns
         }))
 
+    # Decorador para convertir consultas sincronas a asincronas
+    # Obtiene todos los turnos del dia con tiempo de espera
     @database_sync_to_async
     def get_all_turns_data(self):
         from turns.models import Turn
-        turns = Turn.objects.all().order_by('-created_at')
+        from django.utils import timezone
+        today = timezone.now().date()
+        turns = Turn.objects.filter(created_at__date=today).order_by('-created_at')
         now = timezone.now()
         data = []
         for t in turns:
@@ -86,6 +100,7 @@ class TurnConsumer(AsyncWebsocketConsumer):
             })
         return data
 
+    # Consulta y envia solo los turnos en espera (status: waiting)
     async def send_waiting_turns(self):
         turns = await self.get_waiting_turns_data()
         await self.send(text_data=json.dumps({
@@ -94,6 +109,8 @@ class TurnConsumer(AsyncWebsocketConsumer):
             'count': len(turns)
         }))
 
+    # Decorador para convertir consultas sincronas a asincronas
+    # Obtiene turnos con status 'waiting' ordenador por fecha
     @database_sync_to_async
     def get_waiting_turns_data(self):
         from turns.models import Turn
@@ -110,6 +127,7 @@ class TurnConsumer(AsyncWebsocketConsumer):
             })
         return data
 
+    # Consulta y envia la posicion del turno del usuario en la cola
     async def send_user_position(self, user_turn):
         if not user_turn:
             await self.send(text_data=json.dumps({
@@ -126,6 +144,8 @@ class TurnConsumer(AsyncWebsocketConsumer):
             **position_data
         }))
 
+    # Decorador para convertir consultas sincronas a asincronas
+    # Calcula posicion del turno del usuario: cantidad de turnos adelante + 1
     @database_sync_to_async
     def get_position_data(self, user_turn):
         from turns.models import Turn
@@ -148,5 +168,7 @@ class TurnConsumer(AsyncWebsocketConsumer):
             'user_turn': user_turn
         }
 
+    # Recibe actualizaciones broadcastadas desde el servidor
+    # Notifica al cliente WebSocket sobre cambios en turnos
     async def turn_update(self, event):
         await self.send(text_data=json.dumps(event['data']))

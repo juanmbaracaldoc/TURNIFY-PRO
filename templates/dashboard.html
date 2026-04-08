@@ -3,78 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TURNIFY PRO - Dashboard en Tiempo Real</title>
+    <title>TURNIFY PRO - Dashboard con Gráficos</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎫</text></svg>">
     <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .turno-actual-gigante {
-            font-size: 8rem !important;
-            font-weight: 900 !important;
-            text-shadow: 0 0 60px rgba(255,255,255,0.8) !important;
-            animation: glow 2s ease-in-out infinite alternate !important;
-        }
-        @keyframes glow {
-            from { text-shadow: 0 0 30px rgba(0,255,255,0.8), 0 0 60px rgba(0,255,255,0.6); }
-            to { text-shadow: 0 0 40px rgba(255,0,255,0.8), 0 0 80px rgba(255,0,255,0.6); }
-        }
-        .metricas-principales {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            color: white !important;
-        }
+        .turno-actual-gigante { font-size: 8rem !important; font-weight: 900 !important; text-shadow: 0 0 60px rgba(255,255,255,0.8) !important; animation: glow 2s ease-in-out infinite alternate !important; }
+        @keyframes glow { from { text-shadow: 0 0 30px rgba(0,255,255,0.8), 0 0 60px rgba(0,255,255,0.6); } to { text-shadow: 0 0 40px rgba(255,0,255,0.8), 0 0 80px rgba(255,0,255,0.6); } }
+        .metricas-principales { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important; }
         .status-esperando { background: #f39c12 !important; color: white !important; }
-        .status-llamando { 
-            background: linear-gradient(45deg, #e74c3c, #c0392b) !important; 
-            color: white !important;
-            animation: pulse 1s infinite !important;
-        }
-        .numero-turno {
-            font-size: 3.5rem !important;
-            font-weight: 900 !important;
-            background: linear-gradient(45deg, #00f2fe, #ff00ff) !important;
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
-        }
+        .status-llamando { background: linear-gradient(45deg, #e74c3c, #c0392b) !important; color: white !important; animation: pulse 1s infinite !important; }
+        .numero-turno { font-size: 3.5rem !important; font-weight: 900 !important; background: linear-gradient(45deg, #00f2fe, #ff00ff) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; }
+        .charts-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin: 2rem 0; }
+        .chart-card { background: white; border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-lg); }
+        .chart-card h3 { color: var(--dark); margin: 0 0 1rem 0; text-align: center; font-size: 1.3rem; }
+        .btn-export { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; padding: 1rem 2rem; border-radius: var(--radius); font-size: 1rem; cursor: pointer; transition: transform 0.2s; margin: 0.5rem; }
+        .btn-export:hover { transform: scale(1.05); }
+        .reports-section { background: white; border-radius: var(--radius); padding: 2rem; margin: 2rem 0; box-shadow: var(--shadow-lg); }
+        .reports-section h2 { color: var(--dark); margin-bottom: 1.5rem; }
     </style>
 </head>
 <body>
     <div class="dashboard">
-        <!-- HEADER IMPACTANTE -->
         <header style="background: rgba(0,0,0,0.3); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem; text-align: center;">
-            <h1 style="font-size: 3.5rem; margin: 0; background: linear-gradient(45deg, white, #00f2fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                🎛️ DASHBOARD TURNIFY PRO
-            </h1>
-            <div style="font-size: 1.4rem; opacity: 0.9; margin-top: 0.5rem;">Sistema de Turnos en Tiempo Real</div>
+            <h1 style="font-size: 3.5rem; margin: 0; background: linear-gradient(45deg, white, #00f2fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🎛️ DASHBOARD TURNIFY PRO</h1>
+            <div style="font-size: 1.4rem; opacity: 0.9; margin-top: 0.5rem;">Sistema de Turnos con Reportes y Estadísticas</div>
         </header>
 
-        <!-- TURNO ACTUAL GIGANTE -->
         <div class="stats-grid" style="margin-bottom: 3rem;">
-            <div class="stat-card" style="grid-column: 1 / -1; text-align: center; background: linear-gradient(135deg, #1e3c72, #2a5298); color: white;">
+            <div class="stat-card" style="grid-column: 1 / -1; text-align: center; background: linear-gradient(135deg, #1e3c72, #2a298); color: white;">
                 <div style="font-size: 1.5rem; margin-bottom: 1rem; opacity: 0.9;">🔥 TURNO ACTUAL</div>
                 <div id="liveTurn" class="turno-actual-gigante" style="margin-bottom: 1rem;">---</div>
                 <div style="font-size: 1.8rem;">Próximo: <span id="nextTurn" style="color: #00ff88; font-weight: bold;">CARGANDO...</span></div>
             </div>
         </div>
 
-        <!-- MÉTRICAS VISIBLES Y GRANDES -->
         <div class="stats-grid metricas-principales">
             <div class="stat-card">
                 <div class="numero-turno" id="waitingTurns">0</div>
-                <h3 style="color: white; font-size: 1.4rem;">TURNOs ESPERANDO</h3>
-                <div style="font-size: 1.2rem; opacity: 0.9;">En cola ahora</div>
+                <h3 style="color: white; font-size: 1.4rem;">TURNOS ESPERANDO</h3>
             </div>
             <div class="stat-card">
                 <div class="numero-turno" id="totalTurns">0</div>
-                <h3 style="color: white; font-size: 1.4rem;">TOTAL REGISTRADOS</h3>
-                <div style="font-size: 1.2rem; opacity: 0.9;">Hoy</div>
+                <h3 style="color: white; font-size: 1.4rem;">TOTAL HOY</h3>
             </div>
             <div class="stat-card">
-                <div class="numero-turno" id="processedToday">0</div>
-                <h3 style="color: white; font-size: 1.4rem;">PROCESADOS HOY</h3>
-                <div style="font-size: 1.2rem; opacity: 0.9;">% Completados</div>
+                <div class="numero-turno" id="completedToday">0</div>
+                <h3 style="color: white; font-size: 1.4rem;">COMPLETADOS</h3>
+            </div>
+            <div class="stat-card">
+                <div class="numero-turno" id="completionRate">0%</div>
+                <h3 style="color: white; font-size: 1.4rem;">TASA DE ÉXITO</h3>
             </div>
         </div>
 
-        <!-- LISTA DE TURNOS ACTUALIZADA -->
-        <div style="background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-lg); margin-top: 3rem;">
+        <div class="reports-section">
+            <h2>📥 Exportar Datos</h2>
+            <div style="text-align: center; margin-top: 1rem;">
+                <button class="btn-export" onclick="exportCSV()">📄 Exportar CSV</button>
+                <button class="btn-export" onclick="exportExcel()">📊 Exportar Excel</button>
+            </div>
+        </div>
+
+        <div class="charts-section">
+            <div class="chart-card">
+                <h3>📈 Turnos por Estado</h3>
+                <canvas id="statusChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>🏢 Turnos por Tipo de Servicio</h3>
+                <canvas id="serviceChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>📊 Turnos últimos 7 días</h3>
+                <canvas id="dailyChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>🕐 Turnos por Hora (Hoy)</h3>
+                <canvas id="hourlyChart"></canvas>
+            </div>
+        </div>
+
+        <div style="background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-lg); margin-top: 2rem;">
             <div style="background: linear-gradient(135deg, var(--success), #00f2fe); padding: 2rem; color: white; text-align: center;">
                 <h2 style="margin: 0; font-size: 2rem;">📋 LISTA DE TURNOS ACTUAL</h2>
             </div>
@@ -95,62 +105,124 @@
             </div>
         </div>
 
-        <!-- BOTONES DE ACCION -->
         <div style="text-align: center; margin-top: 3rem;">
-            <button class="btn btn-primary" onclick="turnify.fetchTurns()" style="font-size: 1.3rem; padding: 1.5rem 3rem;">
-                🔄 ACTUALIZAR AHORA
-            </button>
+            <button class="btn btn-primary" onclick="turnify.fetchTurns(); loadStatistics(); loadReports();" style="font-size: 1.3rem; padding: 1.5rem 3rem;">🔄 ACTUALIZAR TODO</button>
         </div>
     </div>
 
     <script src="/static/js/websocket.js"></script>
+    <script src="/static/js/turns_data.js"></script>
     <script>
+        let statusChart, serviceChart, dailyChart, hourlyChart;
+
+        function initCharts() {
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            statusChart = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: { labels: ['Esperando', 'Llamando', 'Completados'], datasets: [{ data: [0, 0, 0], backgroundColor: ['#f39c12', '#e74c3c', '#27ae60'] }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            const serviceCtx = document.getElementById('serviceChart').getContext('2d');
+            serviceChart = new Chart(serviceCtx, {
+                type: 'pie',
+                data: { labels: ['General', 'Preferencial', 'Emergencia'], datasets: [{ data: [0, 0, 0], backgroundColor: ['#3498db', '#9b59b6', '#e74c3c'] }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+            dailyChart = new Chart(dailyCtx, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Turnos', data: [], borderColor: '#667eea', backgroundColor: 'rgba(102,126,234,0.1)', fill: true, tension: 0.4 }] },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            });
+
+            const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+            hourlyChart = new Chart(hourlyCtx, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Turnos', data: [], backgroundColor: '#00f2fe' }] },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/statistics/');
+                const data = await response.json();
+                
+                document.getElementById('waitingTurns').textContent = data.waiting;
+                document.getElementById('totalTurns').textContent = data.today_turns;
+                document.getElementById('completedToday').textContent = data.completed;
+                
+                const total = data.waiting + data.calling + data.completed;
+                const rate = total > 0 ? Math.round((data.completed / total) * 100) : 0;
+                document.getElementById('completionRate').textContent = rate + '%';
+                
+                statusChart.data.datasets[0].data = [data.waiting, data.calling, data.completed];
+                statusChart.update();
+                
+                serviceChart.data.datasets[0].data = [data.service_stats.general || 0, data.service_stats.preferential || 0, data.service_stats.emergency || 0];
+                serviceChart.update();
+                
+                dailyChart.data.labels = data.last_7_days.map(d => d.date.slice(5));
+                dailyChart.data.datasets[0].data = data.last_7_days.map(d => d.turns);
+                dailyChart.update();
+            } catch (e) {
+                console.error('Statistics error:', e);
+            }
+        }
+
+        async function loadReports() {
+            try {
+                const response = await fetch('/api/reports/');
+                const data = await response.json();
+                
+                if (data.hourly_stats) {
+                    hourlyChart.data.labels = Object.keys(data.hourly_stats);
+                    hourlyChart.data.datasets[0].data = Object.values(data.hourly_stats);
+                    hourlyChart.update();
+                }
+            } catch (e) {
+                console.error('Reports error:', e);
+            }
+        }
+
+        function exportCSV() {
+            window.location.href = '/api/export/csv/';
+        }
+
+        function exportExcel() {
+            window.location.href = '/api/export/excel/';
+        }
+
         function updateTurnsList(turns) {
             const tbody = document.getElementById('turnsList');
             if (!tbody) return;
             
             if (turns.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="padding: 3rem; text-align: center; color: #999; font-style: italic;">No hay turnos registrados</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="padding: 3rem; text-align: center; color: #999;">No hay turnos registrados</td></tr>';
                 return;
             }
             
             let html = '';
             turns.forEach(turn => {
-                let statusClass = '';
-                let statusText = '';
-                
+                let statusClass = '', statusText = '';
                 switch(turn.status) {
-                    case 'waiting':
-                        statusClass = 'status-esperando';
-                        statusText = 'En espera';
-                        break;
-                    case 'calling':
-                        statusClass = 'status-llamando';
-                        statusText = 'Llamando';
-                        break;
-                    case 'completed':
-                        statusClass = 'status-completed';
-                        statusText = 'Completado';
-                        break;
-                    default:
-                        statusClass = '';
-                        statusText = turn.status;
+                    case 'waiting': statusClass = 'status-esperando'; statusText = 'En espera'; break;
+                    case 'calling': statusClass = 'status-llamando'; statusText = 'Llamando'; break;
+                    case 'completed': statusClass = 'status-Completed'; statusText = 'Completado'; break;
+                    default: statusText = turn.status;
                 }
-                
-                html += `
-                    <tr>
-                        <td style="padding: 1rem; font-weight: 900; font-size: 1.2rem;">${turn.number}</td>
-                        <td style="padding: 1rem;"><span class="${statusClass}" style="padding: 0.5rem 1rem; border-radius: 5px; font-weight: 600;">${statusText}</span></td>
-                        <td style="padding: 1rem; color: #666;">${turn.created_at}</td>
-                        <td style="padding: 1rem; color: #666;">${turn.wait_time}</td>
-                    </tr>
-                `;
+                html += `<tr><td style="padding: 1rem; font-weight: 900; font-size: 1.2rem;">${turn.number}</td><td style="padding: 1rem;"><span class="${statusClass}" style="padding: 0.5rem 1rem; border-radius: 5px; font-weight: 600;">${statusText}</span></td><td style="padding: 1rem; color: #666;">${turn.created_at}</td><td style="padding: 1rem; color: #666;">${turn.wait_time}</td></tr>`;
             });
             tbody.innerHTML = html;
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dashboard loaded, real-time updates active');
+            initCharts();
+            loadStatistics();
+            loadReports();
+            setInterval(() => { turnify.fetchTurns(); loadStatistics(); loadReports(); }, 20000);
         });
     </script>
 </body>

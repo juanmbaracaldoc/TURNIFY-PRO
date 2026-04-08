@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Turnify Pro - Mi Turno</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎫</text></svg>">
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
         .home-container {
@@ -210,6 +211,15 @@
 
         <!-- Get Turn Section -->
         <div id="getTurnSection">
+            <div style="margin-bottom: 1.5rem;">
+                <label style="color: #aaa; font-size: 0.9rem;">Tipo de atención:</label>
+                <select id="serviceType" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 2px solid var(--accent); background: var(--dark); color: white; font-size: 1rem;">
+                    <option value="general">📄 General (A)</option>
+                    <option value="preferential">🌟 Preferencial (B)</option>
+                    <option value="vip">💎 VIP (V)</option>
+                    <option value="emergency">🚨 Emergencia (E)</option>
+                </select>
+            </div>
             <button class="get-turn-btn" onclick="getTurn()" id="getTurnBtn">
                 🎯 Pedir mi Turno
             </button>
@@ -295,6 +305,7 @@
     </div>
 
     <script src="/static/js/websocket.js"></script>
+    <script src="/static/js/turns_data.js"></script>
     <script>
         let userTurn = null;
         let positionCheckInterval = null;
@@ -362,10 +373,15 @@
 
         function getTurn() {
             const btn = document.getElementById('getTurnBtn');
+            const serviceType = document.getElementById('serviceType').value;
             btn.disabled = true;
             btn.textContent = 'Generando...';
 
-            fetch('/api/create/', { method: 'POST' })
+            fetch('/api/create/', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ service_type: serviceType })
+            })
                 .then(r => r.json())
                 .then(d => {
                     userTurn = d.number;
@@ -398,80 +414,79 @@
         }
 
         function startPositionTracking() {
-            if (userTurn) {
-                turnify.send('get_position', { user_turn: userTurn });
-            }
             if (positionCheckInterval) clearInterval(positionCheckInterval);
             positionCheckInterval = setInterval(() => {
                 if (userTurn) {
-                    turnify.send('get_position', { user_turn: userTurn });
+                    // Use REST API as primary (more reliable)
+                    fetch('/api/position/')
+                        .then(r => r.json())
+                        .then(d => {
+                            updateUserPositionDisplay(d);
+                        })
+                        .catch(err => console.error('Position error:', err));
                 }
             }, 2000);
         }
 
-        function updateUserPosition() {
-            if (!userTurn) return;
+        function updateUserPositionDisplay(d) {
+            const posCard = document.getElementById('positionCard');
+            const alertContainer = document.getElementById('alertContainer');
+            if (!d || d.position === -1) return;
 
-            fetch('/api/position/')
-                .then(r => r.json())
-                .then(d => {
-                    const posCard = document.getElementById('positionCard');
-                    const alertContainer = document.getElementById('alertContainer');
+            if (d.status === 'completed') {
+                document.getElementById('completedAlert').style.display = 'block';
+                document.getElementById('positionCard').style.display = 'none';
+                alertContainer.innerHTML = '';
+                if (positionCheckInterval) clearInterval(positionCheckInterval);
+                return;
+            }
 
-                    if (d.status === 'completed') {
-                        document.getElementById('completedAlert').style.display = 'block';
-                        document.getElementById('positionCard').style.display = 'none';
-                        alertContainer.innerHTML = '';
-                        clearInterval(positionCheckInterval);
-                        return;
-                    }
+            document.getElementById('positionCard').style.display = 'block';
+            document.getElementById('completedAlert').style.display = 'none';
 
-                    document.getElementById('positionCard').style.display = 'block';
-                    document.getElementById('completedAlert').style.display = 'none';
+            const turnsAhead = d.turns_ahead;
+            document.getElementById('positionNum').textContent = d.position;
 
-                    const turnsAhead = d.turns_ahead;
-                    document.getElementById('positionNum').textContent = d.position;
+            let statusHTML = '';
+            let alertHTML = '';
 
-                    let statusHTML = '';
-                    let alertHTML = '';
+            if (turnsAhead === 0) {
+                statusHTML = '<strong style="color: var(--success); font-size: 1.3rem;">🎯 ¡ES TU TURNO AHORA!</strong>';
+                posCard.style.background = 'linear-gradient(135deg, var(--success), #27ae60)';
+                playAlertSound();
+            } else if (turnsAhead === 1) {
+                statusHTML = '<strong style="color: var(--warning);">⚠️ Siguiente turno (falta 1)</strong>';
+                posCard.style.background = 'linear-gradient(135deg, var(--warning), #e67e22)';
+            } else if (turnsAhead === 2) {
+                statusHTML = `<strong style="color: var(--warning);">Faltan ${turnsAhead} turnos</strong>`;
+                posCard.style.background = 'linear-gradient(135deg, var(--accent), #1e8bc3)';
+                
+                if (!alertShown) {
+                    alertHTML = `
+                        <div class="alert-box alert-warning">
+                            <div class="alert-icon">⚠️</div>
+                            <div class="alert-text">¡Ya casi es tu turno!</div>
+                            <div class="alert-subtext">Faltan solo 2 personas</div>
+                        </div>
+                    `;
+                    alertShown = true;
+                    playAlertSound();
+                }
+            } else {
+                statusHTML = `<strong>Faltan ${turnsAhead} turnos para ti</strong>`;
+                posCard.style.background = 'linear-gradient(135deg, var(--accent), #1e8bc3)';
+            }
 
-                    if (turnsAhead === 0) {
-                        statusHTML = '<strong style="color: var(--success); font-size: 1.3rem;">🎯 ¡ES TU TURNO AHORA!</strong>';
-                        posCard.style.background = 'linear-gradient(135deg, var(--success), #27ae60)';
-                    } else if (turnsAhead === 1) {
-                        statusHTML = '<strong style="color: var(--warning);">⚠️ Siguiente turno (falta 1)</strong>';
-                        posCard.style.background = 'linear-gradient(135deg, var(--warning), #e67e22)';
-                    } else if (turnsAhead === 2) {
-                        statusHTML = `<strong style="color: var(--warning);">Faltan ${turnsAhead} turnos</strong>`;
-                        posCard.style.background = 'linear-gradient(135deg, var(--accent), #1e8bc3)';
-                        
-                        if (!alertShown) {
-                            alertHTML = `
-                                <div class="alert-box alert-warning">
-                                    <div class="alert-icon">⚠️</div>
-                                    <div class="alert-text">¡Ya casi es tu turno!</div>
-                                    <div class="alert-subtext">Faltan solo 2 personas</div>
-                                </div>
-                            `;
-                            alertShown = true;
-                            playAlertSound();
-                        }
-                    } else {
-                        statusHTML = `<strong>Faltan ${turnsAhead} turnos para ti</strong>`;
-                        posCard.style.background = 'linear-gradient(135deg, var(--accent), #1e8bc3)';
-                    }
-
-                    document.getElementById('positionDetail').innerHTML = statusHTML;
-                    document.getElementById('statusText').innerHTML = 
-                        `<strong>Posición: #${d.position}</strong><br>Turnos adelante: ${turnsAhead}`;
-                    
-                    if (alertHTML) {
-                        alertContainer.innerHTML = alertHTML;
-                    } else if (turnsAhead > 2) {
-                        alertShown = false;
-                        alertContainer.innerHTML = '';
-                    }
-                });
+            document.getElementById('positionDetail').innerHTML = statusHTML;
+            document.getElementById('statusText').innerHTML = 
+                `<strong>Posición: #${d.position}</strong><br>Turnos adelante: ${turnsAhead}`;
+            
+            if (alertHTML) {
+                alertContainer.innerHTML = alertHTML;
+            } else if (turnsAhead > 2) {
+                alertShown = false;
+                alertContainer.innerHTML = '';
+            }
         }
 
         function playAlertSound() {
@@ -548,34 +563,37 @@
         }
 
         function updateMultipleTurnsDisplay(newTurn) {
-            // Si es el primer turno adicional, crear sección especial
-            let multipleTurnsSection = document.getElementById('multipleTurnsSection');
-            if (!multipleTurnsSection) {
-                multipleTurnsSection = document.createElement('div');
-                multipleTurnsSection.id = 'multipleTurnsSection';
-                multipleTurnsSection.className = 'info-card';
-                multipleTurnsSection.innerHTML = `
-                    <h2>🎫 Tus Turnos Activos</h2>
-                    <div id="turnsList" style="margin-top: 1rem;"></div>
-                `;
-                document.getElementById('infoSections').insertBefore(multipleTurnsSection, document.getElementById('completedAlert'));
+            // Eliminar sección anterior si existe
+            const existingSection = document.getElementById('userTurnsSection');
+            if (existingSection) {
+                existingSection.remove();
             }
             
-            const turnsList = document.getElementById('turnsList');
-            turnsList.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--light); border-radius: 8px; margin: 0.5rem 0;">
+            // Crear nueva sección de turnos del usuario
+            const userTurnsSection = document.createElement('div');
+            userTurnsSection.id = 'userTurnsSection';
+            userTurnsSection.className = 'info-card';
+            userTurnsSection.innerHTML = `
+                <h2>🎫 Tus Turnos Activos</h2>
+                <div id="userTurnsList" style="margin-top: 1rem;"></div>
+            `;
+            document.getElementById('infoSections').insertBefore(userTurnsSection, document.getElementById('completedAlert'));
+            
+            const userTurnsList = document.getElementById('userTurnsList');
+            userTurnsList.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f0f0f0; border-radius: 8px; margin: 0.5rem 0;">
                     <div>
-                        <strong style="font-size: 1.2rem; color: var(--accent);">${userTurn}</strong>
-                        <div style="color: #666; font-size: 0.9rem;">Turno original</div>
+                        <strong style="font-size: 1.2rem; color: #333;">${userTurn}</strong>
+                        <div style="color: #666; font-size: 0.9rem;">Turno anterior</div>
                     </div>
-                    <span style="background: var(--success); color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;">ACTIVO</span>
+                    <span style="background: #666; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;">ANTERIOR</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--accent); color: white; border-radius: 8px; margin: 0.5rem 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #3498db; color: white; border-radius: 8px; margin: 0.5rem 0;">
                     <div>
                         <strong style="font-size: 1.2rem;">${newTurn}</strong>
-                        <div style="opacity: 0.9; font-size: 0.9rem;">Nuevo turno</div>
+                        <div style="opacity: 0.9; font-size: 0.9rem;">Turno actual</div>
                     </div>
-                    <span style="background: rgba(255,255,255,0.2); padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;">RECiente</span>
+                    <span style="background: rgba(255,255,255,0.2); padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;">ACTUAL</span>
                 </div>
             `;
             

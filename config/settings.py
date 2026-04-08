@@ -23,6 +23,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
 'django.middleware.security.SecurityMiddleware',
+'whitenoise.middleware.WhiteNoiseMiddleware',
 'django.contrib.sessions.middleware.SessionMiddleware',
 'corsheaders.middleware.CorsMiddleware',
 'django.middleware.common.CommonMiddleware',
@@ -60,15 +61,19 @@ DATABASES={
 
 STATIC_URL='/static/'
 STATICFILES_DIRS=[BASE_DIR/'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD='django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS=True
 
 ASGI_APPLICATION = 'config.asgi.application'
+
+# WebSocket con Redis (production)
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
     }
 }
 
-CORS_ALLOW_WEBSOCKET_ORIGINS = ["*"]
+CORS_ALLOW_WEBSOCKET_ORIGINS = True

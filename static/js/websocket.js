@@ -1,8 +1,10 @@
-const turnify = {
+// WebSocket manager - comunicación en tiempo real
+const websocketManager = {
     ws: null,
     reconnectAttempts: 0,
     maxReconnectAttempts: 5,
-    reconnectDelay: 3000,
+    reconnectDelay: 2000,
+    connected: false,
 
     init() {
         this.connectWebSocket();
@@ -12,41 +14,43 @@ const turnify = {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${protocol}//${window.location.host}/ws/turns/`;
 
+        console.log('Conectando a WebSocket:', wsUrl);
+
         try {
             this.ws = new WebSocket(wsUrl);
 
             this.ws.onopen = () => {
-                console.log('WebSocket connected');
+                console.log('✅ WebSocket conectado');
                 this.reconnectAttempts = 0;
+                this.connected = true;
                 this.requestUpdate('get_all');
             };
 
             this.ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                this.handleMessage(data);
+                try {
+                    const data = JSON.parse(event.data);
+                    this.handleMessage(data);
+                } catch (e) {
+                    console.log('Mensaje WebSocket:', event.data);
+                }
             };
 
             this.ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
+                console.log('WebSocket error (fallback: polling)');
+                this.connected = false;
             };
 
             this.ws.onclose = () => {
-                console.log('WebSocket disconnected');
-                this.attemptReconnect();
+                this.connected = false;
+                console.log('WebSocket desconectado, intentando reconectar...');
+                if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                    this.reconnectAttempts++;
+                    setTimeout(() => this.connectWebSocket(), this.reconnectDelay);
+                }
             };
         } catch (e) {
-            console.error('WebSocket connection error:', e);
-            this.attemptReconnect();
-        }
-    },
-
-    attemptReconnect() {
-        if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            this.reconnectAttempts++;
-            console.log(`Reconnecting... attempt ${this.reconnectAttempts}`);
-            setTimeout(() => this.connectWebSocket(), this.reconnectDelay);
-        } else {
-            console.error('Max reconnection attempts reached');
+            console.log('WebSocket no disponible, usando polling');
+            this.connected = false;
         }
     },
 
@@ -66,93 +70,41 @@ const turnify = {
                 if (typeof updateTurnsList === 'function') {
                     updateTurnsList(data.turns);
                 }
-                this.updateDashboardStats(data.turns);
+                if (turnify) turnify.handleWebSocketUpdate(data);
                 break;
             case 'current_turn':
                 if (typeof updateCurrentTurn === 'function') {
                     updateCurrentTurn(data);
                 }
-                this.updateScreenDisplay(data);
                 break;
             case 'waiting_turns':
-                this.updateWaitingCount(data.count);
                 break;
             case 'user_position':
                 if (typeof updateUserPositionWS === 'function') {
                     updateUserPositionWS(data);
                 }
                 break;
+            case 'turn_update':
+                if (data.data && turnify) turnify.handleWebSocketUpdate(data.data);
+                break;
         }
     },
 
-    updateDashboardStats(turns) {
-        if (!document.getElementById('turnsList')) return;
-
-        const waiting = turns.filter(t => t.status === 'waiting').length;
-        const total = turns.length;
-        const processed = turns.filter(t => t.status === 'completed').length;
-
-        if (document.getElementById('waitingTurns')) {
-            document.getElementById('waitingTurns').textContent = waiting;
-        }
-        if (document.getElementById('totalTurns')) {
-            document.getElementById('totalTurns').textContent = total;
-        }
-        if (document.getElementById('processedToday')) {
-            const pct = total > 0 ? Math.round((processed / total) * 100) : 0;
-            document.getElementById('processedToday').textContent = pct + '%';
-        }
-
-        if (document.getElementById('liveTurn') || document.getElementById('currentNumber')) {
-            const current = turns.find(t => t.status === 'calling');
-            if (current) {
-                if (document.getElementById('liveTurn')) {
-                    document.getElementById('liveTurn').textContent = current.number;
-                }
-                if (document.getElementById('currentNumber')) {
-                    document.getElementById('currentNumber').textContent = current.number;
-                }
-            }
-        }
-
-        if (document.getElementById('nextTurn') || document.getElementById('nextTurnsDisplay')) {
-            const nextTurns = turns.filter(t => t.status === 'waiting').slice(0, 5);
-            if (document.getElementById('nextTurn')) {
-                document.getElementById('nextTurn').textContent = nextTurns.length > 0 ? nextTurns[0].number : 'NINGUNO';
-            }
-            if (document.getElementById('nextTurnsDisplay')) {
-                let html = nextTurns.length === 0
-                    ? '<div class="empty-state">✓ Sin turnos esperando</div>'
-                    : nextTurns.map(t => `<div class="next-turn-number">${t.number}</div>`).join('');
-                document.getElementById('nextTurnsDisplay').innerHTML = html;
-            }
-        }
-
-        if (document.getElementById('waitingCount')) {
-            document.getElementById('waitingCount').textContent = waiting;
-        }
-
-        if (typeof updateTurnsList === 'function') {
-            updateTurnsList(turns);
-        }
-    },
-
-    updateWaitingCount(count) {
-        if (document.getElementById('waitingCount')) {
-            document.getElementById('waitingCount').textContent = count;
-        }
-    },
-
-    updateScreenDisplay(data) {
-        const currentEl = document.getElementById('currentNumber');
-        if (currentEl) {
-            currentEl.textContent = data.number || '---';
-        }
+    isConnected() {
+        return this.connected && this.ws && this.ws.readyState === WebSocket.OPEN;
     }
 };
 
+function initWebSocket() {
+    if (typeof turnify !== 'undefined' && turnify instanceof TurnifyData) {
+        websocketManager.init();
+    } else {
+        setTimeout(initWebSocket, 100);
+    }
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => turnify.init());
+    document.addEventListener('DOMContentLoaded', initWebSocket);
 } else {
-    turnify.init();
+    initWebSocket();
 }
