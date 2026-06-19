@@ -10,7 +10,7 @@ import csv
 import io
 from django.http import HttpResponse
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, date
 import pandas as pd
 
 # Renderiza la pagina principal donde los usuarios pueden solicitar un turno
@@ -76,10 +76,10 @@ def call_next(request):
 @api_view(['GET'])
 def get_all_turns(request):
     from django.utils import timezone
-    from datetime import timedelta
+    from datetime import timedelta, date, date
     
-    today = timezone.now().date()
-    turns = Turn.objects.filter(created_at__date=today).order_by('-created_at')
+    today = date.today()
+    turns = Turn.objects.filter(created_at__date=date.today()).order_by('-created_at')
     now = timezone.now()
     
     data = []
@@ -231,11 +231,11 @@ def finish_current_turn(request):
     return Response({"success": True, "completed_turn": current.number})
 
 # Obtiene la posicion del usuario en la cola de espera
-# El numero de turno se guarda en la sesion del navegador
+# El numero de turno se guarda en la sesion del navegador o se pasa como parametro
 # Retorna: posicion (1 = siguiente), turnos adelante, estado
 @api_view(['GET'])
 def get_user_position(request):
-    user_turn = request.session.get('user_turn')
+    user_turn = request.GET.get('number') or request.session.get('user_turn')
     if not user_turn:
         return Response({"position": -1, "turns_ahead": -1, "message": "No turn assigned"})
     
@@ -268,7 +268,7 @@ def broadcast_turn_update():
         if channel_layer:
             from django.utils import timezone
             
-            today = timezone.now().date()
+            today = date.today()
             turns = Turn.objects.filter(created_at__date=today).order_by('-created_at')
             now = timezone.now()
             
@@ -317,7 +317,7 @@ def broadcast_turn_update():
 @api_view(['GET'])
 def get_statistics(request):
     now = timezone.now()
-    today = now.date()
+    today = date.today()
     
     total_turns = Turn.objects.count()
     today_turns = Turn.objects.filter(created_at__date=today).count()
@@ -337,7 +337,7 @@ def get_statistics(request):
         wait_times = []
         for turn in completed_today:
             if turn.created_at:
-                wait_time = (turn.created_at - now).total_seconds() / 60
+                wait_time = (now - turn.created_at).total_seconds() / 60
                 if wait_time > 0:
                     wait_times.append(wait_time)
         if wait_times:
@@ -436,7 +436,7 @@ def export_excel(request):
 @api_view(['GET'])
 def get_reports(request):
     now = timezone.now()
-    today = now.date()
+    today = date.today()
     
     turns = Turn.objects.filter(created_at__date=today)
     
@@ -467,3 +467,5 @@ def get_reports(request):
         "hourly_stats": hourly_stats,
         "completion_rate": completion_rate
     })
+
+

@@ -413,20 +413,19 @@
             document.getElementById('turnModal').classList.remove('show');
         }
 
-        function startPositionTracking() {
-            if (positionCheckInterval) clearInterval(positionCheckInterval);
-            positionCheckInterval = setInterval(() => {
-                if (userTurn) {
-                    // Use REST API as primary (more reliable)
-                    fetch('/api/position/')
-                        .then(r => r.json())
-                        .then(d => {
-                            updateUserPositionDisplay(d);
-                        })
-                        .catch(err => console.error('Position error:', err));
-                }
-            }, 2000);
-        }
+function startPositionTracking() {
+             if (positionCheckInterval) clearInterval(positionCheckInterval);
+             positionCheckInterval = setInterval(() => {
+                 if (userTurn) {
+                     fetch('/api/position/?number=' + encodeURIComponent(userTurn))
+                         .then(r => r.json())
+                         .then(d => {
+                             updateUserPositionDisplay(d);
+                         })
+                         .catch(err => console.error('Position error:', err));
+                 }
+             }, 2000);
+         }
 
         function updateUserPositionDisplay(d) {
             const posCard = document.getElementById('positionCard');

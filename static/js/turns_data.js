@@ -117,12 +117,6 @@ class TurnifyData {
         this.updateStats();
     }
 
-    updateStats() {
-        this.stats.waiting = this.turns.filter(t => t.status === 'waiting').length;
-        this.stats.totalToday = this.turns.length;
-        this.stats.processed = this.turns.filter(t => t.status === 'completed').length;
-    }
-
     // Update Employee Panel
     updateEmployee() {
         // Update stats
@@ -307,8 +301,9 @@ class TurnifyData {
 
     // Get user position via REST API (fallback when WebSocket fails)
     async getUserPosition(userTurn) {
+        if (!userTurn) return null;
         try {
-            const response = await fetch('/api/position/');
+            const response = await fetch('/api/position/?number=' + encodeURIComponent(userTurn));
             const data = await response.json();
             return data;
         } catch (error) {
