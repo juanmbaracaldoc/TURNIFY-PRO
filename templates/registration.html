@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Turnify Pro</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .login-container { max-width: 400px; margin: 2rem auto; padding: 2rem; }
+        .login-card { background: white; border-radius: 12px; padding: 2rem; box-shadow: var(--shadow); }
+        .login-card h2 { text-align: center; margin-bottom: 1.5rem; color: var(--dark); }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark); }
+        .form-group input[type="text"],
+        .form-group input[type="password"] {
+            width: 100%; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 8px;
+            font-size: 1rem; transition: border-color 0.3s; box-sizing: border-box;
+        }
+        .form-group input:focus { outline: none; border-color: var(--accent); }
+        .role-option { padding: 1rem; margin: 0.5rem 0; border-radius: 8px; background: #f8f9fa; cursor: pointer; text-align: center; transition: all 0.3s; font-weight: 600; }
+        .role-option:hover { background: #e9ecef; transform: translateX(5px); }
+        .role-option.selected { background: var(--accent); color: white; }
+        .documents-section { margin-top: 1rem; display: none; }
+        .doc-input-group { margin-bottom: 0.5rem; display: flex; gap: 0.5rem; align-items: center; }
+        .doc-input-group input[type="text"] { flex: 1; padding: 0.5rem; border: 2px solid #e2e8f0; border-radius: 6px; }
+        .doc-input-group input[type="file"] { flex: 1; font-size: 0.9rem; }
+        .error-msg { color: #e53e3e; font-size: 0.9rem; margin-top: 0.5rem; display: none; }
+        .upload-btn { background: var(--accent); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+        .upload-btn:hover { background: var(--accent-dark); }
+        .login-link { text-align: center; margin-top: 1.5rem; }
+        .login-link a { color: var(--accent); text-decoration: none; font-weight: 600; }
+        .login-link a:hover { text-decoration: underline; }
+        .success-msg { color: #27ae60; font-size: 0.95rem; text-align: center; margin-bottom: 1rem; display: none; }
+        .password-hint { font-size: 0.8rem; color: #666; margin-top: 0.2rem; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card fade-in-up">
+            <h2>📝 Crear Cuenta</h2>
+
+            <div id="successMsg" class="success-msg"></div>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label>Usuario:</label>
+                    <input type="text" id="username" required placeholder="Ingrese su usuario">
+                    <div id="usernameError" class="error-msg" style="margin-top:0.3rem;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Contraseña:</label>
+                    <input type="password" id="password" required placeholder="Ingrese su contraseña" minlength="4">
+                    <div class="password-hint">Mínimo 4 caracteres</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo de usuario:</label>
+                    <div id="roleClient" class="role-option" onclick="selectRole('client')">👤 Cliente</div>
+                    <div id="roleEmployee" class="role-option" onclick="selectRole('employee')">👨‍💼 Empleado</div>
+                    <div id="roleAdmin" class="role-option" onclick="selectRole('admin')">⚙️ Administrador</div>
+                    <input type="hidden" id="selectedRole" value="client">
+                </div>
+
+                <div id="documentsSection" class="documents-section">
+                    <label>Documentos adjuntos (mínimo 1 requerido):</label>
+                    <div id="docInputs">
+                        <div class="doc-input-group">
+                            <input type="file" class="doc-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="padding:0.4rem;">
+                        </div>
+                    </div>
+                    <button type="button" onclick="addFileField()" class="upload-btn" style="margin-top:0.5rem;">+ Agregar documento</button>
+                    <div id="docError" class="error-msg">Debe adjuntar al menos un documento para continuar</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;" id="submitBtn">Registrarse</button>
+            </form>
+
+            <div class="login-link">
+                <p>¿Ya tienes cuenta? <a href="/login/">Inicia Sesión aquí</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedRole = 'client';
+        let uploadedFiles = [];
+
+        function selectRole(role) {
+            selectedRole = role;
+            document.querySelectorAll('.role-option').forEach(el => el.classList.remove('selected'));
+            document.getElementById('role' + role.charAt(0).toUpperCase() + role.slice(1)).classList.add('selected');
+            document.getElementById('selectedRole').value = role;
+
+            if (role === 'client') {
+                document.getElementById('documentsSection').style.display = 'block';
+            } else {
+                document.getElementById('documentsSection').style.display = 'none';
+            }
+        }
+
+        document.getElementById('roleClient').classList.add('selected');
+
+        function addFileField() {
+            const div = document.createElement('div');
+            div.className = 'doc-input-group';
+            div.innerHTML = '<input type="file" class="doc-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="padding:0.4rem;">';
+            document.getElementById('docInputs').appendChild(div);
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (!username || !password) {
+                showError('Por favor complete todos los campos');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Registrando...';
+
+            let documents = [];
+            if (selectedRole === 'client') {
+                const files = document.querySelectorAll('.doc-file');
+                const hasFiles = Array.from(files).some(f => f.files.length > 0);
+                if (!hasFiles) {
+                    document.getElementById('docError').style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Registrarse';
+                    return;
+                }
+                document.getElementById('docError').style.display = 'none';
+                documents = Array.from(files)
+                    .filter(f => f.files.length > 0)
+                    .map(f => f.files[0].name);
+            }
+
+            fetch('/api/register/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') || '' },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    role: selectedRole,
+                    documents: documents
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Registrarse';
+                if (data.success) {
+                    const successMsg = document.getElementById('successMsg');
+                    successMsg.innerText = data.message;
+                    successMsg.style.display = 'block';
+                    successMsg.style.animation = 'fadeInUp 0.5s ease';
+                    setTimeout(() => {
+                        window.location.href = '/login/';
+                    }, 1500);
+                } else {
+                    showError(data.message);
+                }
+            })
+            .catch(err => {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Registrarse';
+                showError('Error de conexión. Intente nuevamente.');
+                console.error(err);
+            });
+        });
+
+        document.getElementById('username').addEventListener('blur', function() {
+            const username = this.value.trim();
+            const errorDiv = document.getElementById('usernameError');
+            if (!username) {
+                errorDiv.style.display = 'none';
+                return;
+            }
+            fetch(`/api/check-user/${encodeURIComponent(username)}/`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.exists) {
+                        errorDiv.innerText = 'Este usuario ya está registrado';
+                        errorDiv.style.display = 'block';
+                        this.style.borderColor = '#e53e3e';
+                    } else {
+                        errorDiv.style.display = 'none';
+                        this.style.borderColor = '#27ae60';
+                    }
+                });
+        });
+
+        function showError(msg) {
+            alert(msg);
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

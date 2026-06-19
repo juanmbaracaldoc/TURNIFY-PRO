@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TURNIFY PRO - Dashboard con Gráficos</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎫</text></svg>">
+    <title>TURNIFY PRO - Dashboard Administrador</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🎫</text></svg>">
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -21,14 +21,27 @@
         .btn-export:hover { transform: scale(1.05); }
         .reports-section { background: white; border-radius: var(--radius); padding: 2rem; margin: 2rem 0; box-shadow: var(--shadow-lg); }
         .reports-section h2 { color: var(--dark); margin-bottom: 1.5rem; }
+        .employee-section { background: white; border-radius: var(--radius); padding: 2rem; margin: 2rem 0; box-shadow: var(--shadow-lg); }
+        .employee-form { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .employee-form input { padding: 0.8rem; border-radius: 8px; border: 1px solid #ccc; flex: 1; min-width: 200px; }
+        .employee-list-item { padding: 1rem; background: #f8f9fa; margin: 0.5rem 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .employee-list-item button { background: #e53e3e; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="dashboard">
-        <header style="background: rgba(0,0,0,0.3); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem; text-align: center;">
-            <h1 style="font-size: 3.5rem; margin: 0; background: linear-gradient(45deg, white, #00f2fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🎛️ DASHBOARD TURNIFY PRO</h1>
-            <div style="font-size: 1.4rem; opacity: 0.9; margin-top: 0.5rem;">Sistema de Turnos con Reportes y Estadísticas</div>
+        <header style="background: rgba(0,0,0,0.3); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem; text-align: center; position: relative;">
+            <h1 style="font-size: 3.5rem; margin: 0; background: linear-gradient(45deg, white, #00f2fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🎛️ DASHBOARD ADMINISTRADOR</h1>
+            <div style="font-size: 1.4rem; opacity: 0.9; margin-top: 0.5rem;">Turnify Pro - Gestión de Turnos</div>
+            <button onclick="logout()" style="position: absolute; top: 1rem; right: 1rem; background: #e53e3e; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;">🚪 Cerrar Sesión</button>
         </header>
+        <script>
+        function logout() {
+            fetch('/api/logout/', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+            .then(() => { window.location.href = '/login/'; })
+            .catch(() => { window.location.href = '/login/'; });
+        }
+        </script>
 
         <div class="stats-grid" style="margin-bottom: 3rem;">
             <div class="stat-card" style="grid-column: 1 / -1; text-align: center; background: linear-gradient(135deg, #1e3c72, #2a298); color: white;">
@@ -52,8 +65,21 @@
                 <h3 style="color: white; font-size: 1.4rem;">COMPLETADOS</h3>
             </div>
             <div class="stat-card">
-                <div class="numero-turno" id="completionRate">0%</div>
-                <h3 style="color: white; font-size: 1.4rem;">TASA DE ÉXITO</h3>
+                <div class="numero-turno" id="totalUsers">0</div>
+                <h3 style="color: white; font-size: 1.4rem;">USUARIOS</h3>
+            </div>
+        </div>
+
+        <div class="employee-section">
+            <h2>👨‍💼 Gestión de Empleados</h2>
+            <div class="employee-form">
+                <input type="text" id="empUsername" placeholder="Usuario" required>
+                <input type="password" id="empPassword" placeholder="Contraseña" required>
+                <input type="text" id="empFullName" placeholder="Nombre Completo" required>
+                <button onclick="createEmployee()" class="btn btn-primary">Crear Empleado</button>
+            </div>
+            <div id="employeeList">
+                <p style="color: #999;">Cargando empleados...</p>
             </div>
         </div>
 
@@ -93,20 +119,21 @@
                     <thead>
                         <tr style="background: var(--dark); color: white;">
                             <th style="padding: 1.5rem 1rem; font-size: 1.2rem;">NUMERO</th>
+                            <th style="padding: 1.5rem 1rem; font-size: 1.2rem;">CLIENTE</th>
                             <th style="padding: 1.5rem 1rem; font-size: 1.2rem;">ESTADO</th>
                             <th style="padding: 1.5rem 1rem; font-size: 1.2rem;">CREADO</th>
                             <th style="padding: 1.5rem 1rem; font-size: 1.2rem;">ESPERA</th>
                         </tr>
                     </thead>
                     <tbody id="turnsList">
-                        <tr><td colspan="4" style="padding: 3rem; text-align: center; color: #999; font-style: italic;">Cargando turnos en tiempo real...</td></tr>
+                        <tr><td colspan="5" style="padding: 3rem; text-align: center; color: #999; font-style: italic;">Cargando turnos en tiempo real...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
         <div style="text-align: center; margin-top: 3rem;">
-            <button class="btn btn-primary" onclick="turnify.fetchTurns(); loadStatistics(); loadReports();" style="font-size: 1.3rem; padding: 1.5rem 3rem;">🔄 ACTUALIZAR TODO</button>
+            <button class="btn btn-primary" onclick="turnify.fetchTurns(); loadStatistics(); loadReports(); loadEmployees();" style="font-size: 1.3rem; padding: 1.5rem 3rem;">🔄 ACTUALIZAR TODO</button>
         </div>
     </div>
 
@@ -153,10 +180,10 @@
                 document.getElementById('waitingTurns').textContent = data.waiting;
                 document.getElementById('totalTurns').textContent = data.today_turns;
                 document.getElementById('completedToday').textContent = data.completed;
+                document.getElementById('totalUsers').textContent = data.total_users || 0;
                 
                 const total = data.waiting + data.calling + data.completed;
                 const rate = total > 0 ? Math.round((data.completed / total) * 100) : 0;
-                document.getElementById('completionRate').textContent = rate + '%';
                 
                 statusChart.data.datasets[0].data = [data.waiting, data.calling, data.completed];
                 statusChart.update();
@@ -187,20 +214,65 @@
             }
         }
 
-        function exportCSV() {
-            window.location.href = '/api/export/csv/';
+        async function loadEmployees() {
+            try {
+                const response = await fetch('/api/get-employees/');
+                const data = await response.json();
+                const list = document.getElementById('employeeList');
+                if (data.employees && data.employees.length > 0) {
+                    list.innerHTML = data.employees.map(emp => 
+                        '<div class="employee-list-item"><span>' + emp.full_name + ' (' + emp.username + ')</span><button onclick="deleteEmployee(\\' + emp.username + \\')">Eliminar</button></div>'
+                    ).join('');
+                } else {
+                    list.innerHTML = '<p style="color: #999;">No hay empleados registrados</p>';
+                }
+            } catch (e) {
+                console.error('Employees error:', e);
+            }
         }
 
-        function exportExcel() {
-            window.location.href = '/api/export/excel/';
+        async function createEmployee() {
+            const username = document.getElementById('empUsername').value;
+            const password = document.getElementById('empPassword').value;
+            const full_name = document.getElementById('empFullName').value;
+            
+            if (!username || !password || !full_name) {
+                alert('Complete todos los campos');
+                return;
+            }
+
+            const response = await fetch('/api/create-employee/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, full_name })
+            });
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('empUsername').value = '';
+                document.getElementById('empPassword').value = '';
+                document.getElementById('empFullName').value = '';
+                loadEmployees();
+            } else {
+                alert(data.message);
+            }
         }
+
+        async function deleteEmployee(username) {
+            if (confirm('¿Eliminar empleado ' + username + '?')) {
+                await fetch('/api/delete-user/' + username + '/', { method: 'DELETE' });
+                loadEmployees();
+            }
+        }
+
+        function exportCSV() { window.location.href = '/api/export/csv/'; }
+        function exportExcel() { window.location.href = '/api/export/excel/'; }
 
         function updateTurnsList(turns) {
             const tbody = document.getElementById('turnsList');
             if (!tbody) return;
             
             if (turns.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="padding: 3rem; text-align: center; color: #999;">No hay turnos registrados</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="padding: 3rem; text-align: center; color: #999;">No hay turnos registrados</td></tr>';
                 return;
             }
             
@@ -213,7 +285,8 @@
                     case 'completed': statusClass = 'status-Completed'; statusText = 'Completado'; break;
                     default: statusText = turn.status;
                 }
-                html += `<tr><td style="padding: 1rem; font-weight: 900; font-size: 1.2rem;">${turn.number}</td><td style="padding: 1rem;"><span class="${statusClass}" style="padding: 0.5rem 1rem; border-radius: 5px; font-weight: 600;">${statusText}</span></td><td style="padding: 1rem; color: #666;">${turn.created_at}</td><td style="padding: 1rem; color: #666;">${turn.wait_time}</td></tr>`;
+                const client = turn.client_data ? turn.client_data.full_name : 'Anónimo';
+                html += '<tr><td style="padding: 1rem; font-weight: 900; font-size: 1.2rem;">' + turn.number + '</td><td style="padding: 1rem;">' + client + '</td><td style="padding: 1rem;"><span class="' + statusClass + '" style="padding: 0.5rem 1rem; border-radius: 5px; font-weight: 600;">' + statusText + '</span></td><td style="padding: 1rem; color: #666;">' + turn.created_at + '</td><td style="padding: 1rem; color: #666;">' + turn.wait_time + '</td></tr>';
             });
             tbody.innerHTML = html;
         }
@@ -222,6 +295,7 @@
             initCharts();
             loadStatistics();
             loadReports();
+            loadEmployees();
             setInterval(() => { turnify.fetchTurns(); loadStatistics(); loadReports(); }, 20000);
         });
     </script>

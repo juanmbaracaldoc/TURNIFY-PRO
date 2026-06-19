@@ -11,3 +11,15 @@ class Turn(models.Model):
     uploaded_documents=models.JSONField(default=list, blank=True, help_text="Documents uploaded by user")
     def __str__(self):
         return self.number
+
+class Register(models.Model):
+    username=models.CharField(max_length=100, unique=True)
+    password=models.CharField(max_length=255)
+    role=models.CharField(max_length=20, default="client")
+    full_name=models.CharField(max_length=200, blank=True, default="")
+    cedula=models.CharField(max_length=50, blank=True, default="")
+    email=models.EmailField(max_length=254, blank=True, default="")
+    phone=models.CharField(max_length=50, blank=True, default="")
+    created_at=models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.username

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -8,19 +8,11 @@
     <style>
         .login-container { max-width: 400px; margin: 2rem auto; padding: 2rem; }
         .login-card { background: white; border-radius: 12px; padding: 2rem; box-shadow: var(--shadow); }
-        .role-option { padding: 1rem; margin: 0.5rem 0; border-radius: 8px; background: #f8f9fa; cursor: pointer; text-align: center; transition: all 0.3s; }
-        .role-option:hover { background: #e9ecef; transform: translateX(5px); }
-        .role-option.selected { background: var(--accent); color: white; }
-        .documents-section { margin-top: 1rem; display: none; }
-        .doc-input-group { margin-bottom: 0.5rem; display: flex; gap: 0.5rem; align-items: center; }
-        .doc-input-group input[type="text"] { flex: 1; }
-        .doc-input-group input[type="file"] { flex: 1; }
         .error-msg { color: #e53e3e; font-size: 0.9rem; margin-top: 0.5rem; display: none; }
-        .upload-btn { background: var(--accent); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-    <div class="login-container">
+    <div class="login-container fade-in-up">
         <div class="login-card">
             <h2 style="text-align: center; margin-bottom: 1.5rem;">🔐 Iniciar Sesión</h2>
             <form id="loginForm">
@@ -32,87 +24,74 @@
                     <label>Contraseña:</label>
                     <input type="password" id="password" style="width: 100%; padding: 0.8rem; margin-top: 0.5rem;" required>
                 </div>
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem;">Tipo de usuario:</label>
-                    <div id="roleClient" class="role-option" onclick="selectRole('client')">👤 Cliente</div>
-                    <div id="roleEmployee" class="role-option" onclick="selectRole('employee')">👨‍💼 Empleado</div>
-                    <div id="roleAdmin" class="role-option" onclick="selectRole('admin')">⚙️ Administrador</div>
-                    <input type="hidden" id="selectedRole" value="">
-                </div>
-                
-                <div id="documentsSection" class="documents-section">
-                    <label>Documentos adjuntos (mínimo 1 requerido):</label>
-                    <div id="docInputs">
-                        <div class="doc-input-group">
-                            <input type="file" class="doc-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="padding: 0.4rem;">
-                        </div>
-                    </div>
-                    <button type="button" onclick="addFileField()" style="margin-top: 0.5rem; font-size: 0.9rem;">+ Agregar documento</button>
-                    <div id="docError" class="error-msg">Debe adjuntar al menos un documento para continuar</div>
-                </div>
-                
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Entrar</button>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" id="loginBtn">Entrar</button>
             </form>
+            <div style="text-align:center; margin-top:1rem; font-size:0.9rem;">
+                ¿No tienes cuenta? <a href="/register/" style="color:var(--accent); font-weight:600;">Regístrate aquí</a>
+            </div>
         </div>
     </div>
     <script>
-        let selectedRole = '';
-        let uploadedFiles = [];
-        
-        function selectRole(role) {
-            selectedRole = role;
-            document.querySelectorAll('.role-option').forEach(el => el.classList.remove('selected'));
-            document.getElementById('role' + role.charAt(0).toUpperCase() + role.slice(1)).classList.add('selected');
-            document.getElementById('selectedRole').value = role;
-            
-            if (role === 'client') {
-                document.getElementById('documentsSection').style.display = 'block';
-            } else {
-                document.getElementById('documentsSection').style.display = 'none';
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
             }
+            return cookieValue;
         }
-        
-        function addFileField() {
-            const div = document.createElement('div');
-            div.className = 'doc-input-group';
-            div.innerHTML = '<input type="file" class="doc-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="padding: 0.4rem;">';
-            document.getElementById('docInputs').appendChild(div);
-        }
-        
+
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             var user = document.getElementById('username').value;
-            if (!selectedRole) {
-                alert('Por favor seleccione un tipo de usuario');
+            var pass = document.getElementById('password').value;
+            var btn = document.getElementById('loginBtn');
+
+            if (!user || !pass) {
+                alert('Por favor ingrese usuario y contraseña');
                 return;
             }
-            
-            // Validar documentos si es cliente
-            if (selectedRole === 'client') {
-                const files = document.querySelectorAll('.doc-file');
-                const hasFiles = Array.from(files).some(f => f.files.length > 0);
-                
-                if (!hasFiles) {
-                    document.getElementById('docError').style.display = 'block';
-                    return;
+
+            btn.disabled = true;
+            btn.innerText = 'Ingresando...';
+
+            fetch('/api/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || ''
+                },
+                body: JSON.stringify({
+                    username: user,
+                    password: pass
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerText = 'Entrar';
+
+                if (data.success) {
+                    localStorage.setItem('turnify_user', user);
+                    localStorage.setItem('turnify_role', data.user.role);
+                    window.location.href = data.redirect_url;
+                } else {
+                    alert(data.message || 'Credenciales inválidas');
                 }
-                document.getElementById('docError').style.display = 'none';
-                
-                // Guardar nombres de archivos
-                const fileNames = Array.from(files)
-                    .filter(f => f.files.length > 0)
-                    .map(f => f.files[0].name);
-                localStorage.setItem('client_documents', JSON.stringify(fileNames));
-            }
-            
-            localStorage.setItem('turnify_user', user);
-            localStorage.setItem('turnify_role', selectedRole);
-            
-            var redirectUrl = '/';
-            if (selectedRole === 'employee') redirectUrl = '/employee/';
-            else if (selectedRole === 'admin') redirectUrl = '/dashboard/';
-            
-            window.location.href = redirectUrl;
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerText = 'Entrar';
+                alert('Error de conexión. Intente nuevamente.');
+                console.error(err);
+            });
         });
     </script>
 </body>

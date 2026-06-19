@@ -1,4 +1,4 @@
-from django.urls import path
+﻿from django.urls import path
 from . import views
 
 urlpatterns=[
@@ -7,6 +7,15 @@ urlpatterns=[
     path('screen/',views.screen),
     path('dashboard/',views.dashboard),
     path('login/',views.login_page),
+    path('logout/',views.logout_page),
+    path('register/',views.register_page, name='register'),
+    path('api/register/',views.register_user),
+    path('api/login/',views.login_user),
+    path('api/logout/',views.logout_user),
+    path('api/create-employee/',views.create_employee),
+    path('api/get-employees/',views.get_employees),
+    path('api/users/',views.get_users),
+    path('api/delete-user/<str:username>/',views.delete_user, name='delete_user'),
     path('api/create/',views.create_turn),
     path('api/call/',views.call_next),
     path('api/all/',views.get_all_turns),
