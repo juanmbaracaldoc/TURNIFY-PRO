@@ -52,7 +52,6 @@ class TurnifyData {
             this.updateUI();
         } catch (error) {
             console.log('Error fetching turns:', error);
-            // NO usar datos de demo - dejar vacío
             this.turns = [];
             this.currentTurn = null;
             this.stats = { waiting: 0, totalToday: 0, processed: 0 };
@@ -67,7 +66,6 @@ class TurnifyData {
     }
 
     updateUI() {
-        // Update screen
         if (document.getElementById('currentNumber')) {
             const current = this.turns.find(t => t.status === 'calling');
             document.getElementById('currentNumber').textContent = current?.number || '---';
@@ -76,7 +74,6 @@ class TurnifyData {
             document.getElementById('waitingCount').textContent = this.stats.waiting;
         }
         
-        // Update screen next turns
         const nextDisplay = document.getElementById('nextTurnsDisplay');
         if (nextDisplay) {
             const waitingTurns = this.turns.filter(t => t.status === 'waiting').slice(0, 5);
@@ -117,9 +114,7 @@ class TurnifyData {
         this.updateStats();
     }
 
-    // Update Employee Panel
     updateEmployee() {
-        // Update stats
         const waitingEl = document.getElementById('waitingCount');
         const totalEl = document.getElementById('totalToday');
         const processedEl = document.getElementById('processedToday');
@@ -134,26 +129,22 @@ class TurnifyData {
         if (totalEl) totalEl.textContent = this.stats.totalToday;
         if (processedEl) processedEl.textContent = this.stats.processed;
 
-        // Update current turn
         if (currentTurnEl) {
             currentTurnEl.textContent = this.currentTurn?.number || '--';
         }
         
-        // Update current status
         if (currentStatusEl) {
             if (this.currentTurn) {
-                currentStatusEl.innerHTML = `<span style="color: #333; font-weight: bold;">🔔 LLAMANDO: ${this.currentTurn.number}</span>`;
+                currentStatusEl.innerHTML = '<span style="color: #333; font-weight: bold;">🔔 LLAMANDO: ' + this.currentTurn.number + '</span>';
             } else {
-                currentStatusEl.innerHTML = `<span style="color: #666;">Esperando turno...</span>`;
+                currentStatusEl.innerHTML = '<span style="color: #666;">Esperando turno...</span>';
             }
         }
 
-        // Update queue count
         if (queueCountEl) {
-            queueCountEl.textContent = `${this.stats.waiting} turnos`;
+            queueCountEl.textContent = this.stats.waiting + ' turnos';
         }
 
-        // Update waiting queue list
         if (waitingQueueEl) {
             const waitingTurns = this.turns.filter(t => t.status === 'waiting').slice(0, 10);
             
@@ -172,21 +163,26 @@ class TurnifyData {
             }
         }
 
-        // Update button states
         if (callBtnEl) {
             callBtnEl.disabled = this.stats.waiting === 0;
         }
         if (finishBtnEl) {
             finishBtnEl.disabled = !this.currentTurn;
         }
+        
+        // Update documents panel
+        const docsPanel = document.getElementById('documentsPanel');
+        const docsList = document.getElementById('requiredDocsList');
+        if (docsPanel && docsList && this.currentTurn) {
+            docsPanel.style.display = 'block';
+            window.currentTurnNumber = this.currentTurn.number;
+        }
     }
 
-    // Update Dashboard
     updateDashboard() {
         const tbody = document.getElementById('turnsList');
         if (!tbody) return;
 
-        // Sort turns: calling first, then waiting, then completed
         const statusOrder = { 'calling': 0, 'waiting': 1, 'completed': 2 };
         const sortedTurns = [...this.turns].sort((a, b) => {
             return (statusOrder[a.status] || 3) - (statusOrder[b.status] || 3);
@@ -197,18 +193,17 @@ class TurnifyData {
                               turn.status === 'calling' ? 'turn-calling' : 
                               'turn-completed';
             const statusLabel = turn.status === 'calling' ? 'LLAMANDO' :
-                               turn.status === 'waiting' ? 'ESPERANDO' :
-                               'COMPLETADO';
+                             turn.status === 'waiting' ? 'ESPERANDO' :
+                             'COMPLETADO';
             return `
                 <tr>
-                    <td style=\"font-size: 1.5rem; font-weight: 700; color: var(--dark);\">${turn.number}</td>
-                    <td><span class=\"status-badge ${statusClass}\">${statusLabel}</span></td>
-                    <td style=\"font-family: monospace;\">${turn.created_at || '-'}</td>
+                    <td style="font-size: 1.5rem; font-weight: 700; color: var(--dark);">${turn.number}</td>
+                    <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+                    <td style="font-family: monospace;">${turn.created_at || '-'}</td>
                     <td><strong>${turn.wait_time || '0 min'}</strong></td>
                 </tr>`;
         }).join('');
 
-        // Update stats cards
         const totalTurnsEl = document.getElementById('totalTurns');
         const waitingTurnsEl = document.getElementById('waitingTurns');
         const processedTodayEl = document.getElementById('processedToday');
@@ -219,19 +214,16 @@ class TurnifyData {
         if (waitingTurnsEl) waitingTurnsEl.textContent = this.stats.waiting;
         if (processedTodayEl) processedTodayEl.textContent = this.stats.processed;
         
-        // Update live turn display
         if (liveTurnEl) {
             liveTurnEl.textContent = this.currentTurn?.number || 'SIN TURNO';
         }
         
-        // Update next turn
         if (nextTurnEl) {
             const nextTurn = this.turns.find(t => t.status === 'waiting');
             nextTurnEl.textContent = nextTurn?.number || 'NO HAY';
         }
     }
 
-    // Call next turn in queue
     async callNextTurn() {
         try {
             const response = await fetch('/api/call/', { method: 'POST' });
@@ -250,7 +242,6 @@ class TurnifyData {
         }
     }
 
-    // Call a specific turn
     async callSpecificTurn(number) {
         try {
             const response = await fetch('/api/call-specific/', {
@@ -273,7 +264,6 @@ class TurnifyData {
         }
     }
 
-    // Finish current turn
     async finishCurrentTurn() {
         try {
             const response = await fetch('/api/finish/', { method: 'POST' });
@@ -292,14 +282,12 @@ class TurnifyData {
         }
     }
 
-    // Send WebSocket message
     send(action, data = {}) {
         if (websocketManager && websocketManager.send) {
             websocketManager.send(action, data);
         }
     }
 
-    // Get user position via REST API (fallback when WebSocket fails)
     async getUserPosition(userTurn) {
         if (!userTurn) return null;
         try {
@@ -309,6 +297,40 @@ class TurnifyData {
         } catch (error) {
             console.error('Error getting position:', error);
             return null;
+        }
+    }
+
+    // Set required documents for current turn
+    async setRequiredDocuments(number, documents) {
+        try {
+            const response = await fetch('/api/documents/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ number: number, documents: documents })
+            });
+            const data = await response.json();
+            await this.fetchTurns();
+            return data;
+        } catch (error) {
+            console.error('Error setting documents:', error);
+            return { success: false };
+        }
+    }
+
+    // Upload document for user turn
+    async uploadDocument(number, document) {
+        try {
+            const response = await fetch('/api/upload-document/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ number: number, document: document })
+            });
+            const data = await response.json();
+            await this.fetchTurns();
+            return data;
+        } catch (error) {
+            console.error('Error uploading document:', error);
+            return { success: false };
         }
     }
 }

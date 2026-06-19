@@ -7,209 +7,36 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎫</text></svg>">
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
-        .home-container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-        }
-        .welcome-section {
-            text-align: center;
-            color: white;
-            margin-bottom: 3rem;
-            padding: 2rem;
-        }
-        .welcome-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-        }
-        .welcome-title {
-            font-size: 2.5rem;
-            font-weight: 900;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--accent), var(--success));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .welcome-subtitle {
-            font-size: 1.1rem;
-            color: #ccc;
-            margin-bottom: 1rem;
-        }
-        .get-turn-btn {
-            background: linear-gradient(135deg, var(--accent), #1e8bc3);
-            color: white;
-            padding: 1.5rem 3rem;
-            font-size: 1.3rem;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .get-turn-btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(52, 152, 219, 0.6);
-        }
-        .get-turn-btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-        .turn-display {
-            margin: 2rem 0;
-            text-align: center;
-        }
-        .turn-number-big {
-            font-size: 5rem;
-            font-weight: 900;
-            color: var(--accent);
-            margin: 1rem 0;
-            animation: pulse 1.5s infinite;
-        }
-        .info-card {
-            background: white;
-            border-radius: var(--radius);
-            padding: 2rem;
-            margin: 1.5rem 0;
-            box-shadow: var(--shadow);
-            border-left: 5px solid var(--accent);
-        }
-        .info-card h2 {
-            color: var(--dark);
-            margin-bottom: 1rem;
-            font-size: 1.3rem;
-        }
-        .position-display {
-            background: linear-gradient(135deg, var(--accent), #1e8bc3);
-            color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            text-align: center;
-            margin: 1.5rem 0;
-            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
-        }
-        .position-number {
-            font-size: 3.5rem;
-            font-weight: 900;
-            margin: 0.5rem 0;
-        }
-        .position-label {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .alert-box {
-            padding: 2rem;
-            border-radius: 12px;
-            text-align: center;
-            margin: 1.5rem 0;
-            color: white;
-            font-weight: 600;
-            animation: pulse 1s infinite;
-        }
-        .alert-warning {
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            box-shadow: 0 8px 20px rgba(243, 156, 18, 0.4);
-        }
-        .alert-danger {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
-        }
-        .alert-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-        .alert-text {
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
-        }
-        .alert-subtext {
-            font-size: 1rem;
-            opacity: 0.9;
-        }
-        .completed-badge {
-            background: linear-gradient(135deg, var(--success), #27ae60);
-            color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            text-align: center;
-            margin: 1.5rem 0;
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-        .secondary-btn {
-            background: var(--secondary);
-            color: white;
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            margin-top: 1rem;
-        }
-        .secondary-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.6);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal-overlay.show {
-            display: flex;
-        }
-        .modal-dialog {
-            background: white;
-            border-radius: var(--radius);
-            padding: 3rem;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            box-shadow: var(--shadow-lg);
-            animation: slideDown 0.3s ease;
-        }
-        .modal-icon {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-        }
-        .modal-title {
-            font-size: 2rem;
-            color: var(--dark);
-            margin-bottom: 1rem;
-            font-weight: 700;
-        }
-        .modal-turn {
-            font-size: 4rem;
-            font-weight: 900;
-            color: var(--accent);
-            margin: 1.5rem 0;
-            animation: pulse 1s infinite;
-        }
+        .home-container { max-width: 600px; margin: 0 auto; padding: 2rem 1rem; }
+        .welcome-section { text-align: center; color: white; margin-bottom: 3rem; padding: 2rem; }
+        .welcome-icon { font-size: 4rem; margin-bottom: 1rem; }
+        .welcome-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; background: linear-gradient(135deg, var(--accent), var(--success)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .welcome-subtitle { font-size: 1.1rem; color: #ccc; margin-bottom: 1rem; }
+        .get-turn-btn { background: linear-gradient(135deg, var(--accent), #1e8bc3); color: white; padding: 1.5rem 3rem; font-size: 1.3rem; border: none; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(52, 182, 219, 0.4); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .get-turn-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(52, 152, 219, 0.6); }
+        .get-turn-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        .turn-display { margin: 2rem 0; text-align: center; }
+        .turn-number-big { font-size: 5rem; font-weight: 900; color: var(--accent); margin: 1rem 0; animation: pulse 1.5s infinite; }
+        .info-card { background: white; border-radius: var(--radius); padding: 2rem; margin: 1.5rem 0; box-shadow: var(--shadow); border-left: 5px solid var(--accent); }
+        .info-card h2 { color: var(--dark); margin-bottom: 1rem; font-size: 1.3rem; }
+        .position-display { background: linear-gradient(135deg, var(--accent), #1e8bc3); color: white; padding: 2rem; border-radius: 12px; text-align: center; margin: 1.5rem 0; box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3); }
+        .position-number { font-size: 3.5rem; font-weight: 900; margin: 0.5rem 0; }
+        .doc-item { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee; font-size: 0.95rem; }
+        .doc-status { padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; }
+        .doc-pending { background: #fff3cd; color: #856404; }
+        .doc-uploaded { background: #d4edda; color: #155724; }
+        .documents-panel { background: white; border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; box-shadow: var(--shadow); border-left: 5px solid #f39c12; }
+        .upload-doc-btn { background: var(--accent); color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
     </style>
 </head>
 <body>
     <div class="home-container fade-in-up">
-        <!-- Welcome Section -->
         <div class="welcome-section">
             <div class="welcome-icon">🎫</div>
             <h1 class="welcome-title">Turnify Pro</h1>
             <p class="welcome-subtitle">Sistema Inteligente de Gestión de Turnos</p>
         </div>
 
-        <!-- Get Turn Section -->
         <div id="getTurnSection">
             <div style="margin-bottom: 1.5rem;">
                 <label style="color: #aaa; font-size: 0.9rem;">Tipo de atención:</label>
@@ -220,68 +47,49 @@
                     <option value="emergency">🚨 Emergencia (E)</option>
                 </select>
             </div>
-            <button class="get-turn-btn" onclick="getTurn()" id="getTurnBtn">
-                🎯 Pedir mi Turno
-            </button>
-            <p style="text-align: center; color: #aaa; margin-top: 1rem; font-size: 0.95rem;">
-                Haz clic para obtener tu número de turno
-            </p>
+            <button class="get-turn-btn" onclick="getTurn()" id="getTurnBtn">🎯 Pedir mi Turno</button>
+            <p style="text-align: center; color: #aaa; margin-top: 1rem; font-size: 0.95rem;">Haz clic para obtener tu número de turno</p>
         </div>
 
-        <!-- Turn Display -->
         <div id="turnDisplay" style="display: none;" class="turn-display">
             <div style="color: white; font-size: 1.1rem; margin-bottom: 0.5rem;">Tu turno asignado</div>
             <div class="turn-number-big" id="turnNumDisplay">---</div>
         </div>
 
-        <!-- Info Sections -->
         <div id="infoSections" style="display: none;">
-            <!-- Position Info -->
+            <div id="requiredDocs" style="display: none;" class="documents-panel">
+                <h2 style="margin: 0 0 1rem 0; color: #333;">📎 Documentos Requeridos</h2>
+                <div id="docsList"></div>
+            </div>
+
             <div id="positionCard" class="position-display">
                 <div class="position-label">Tu Posición en la Cola</div>
                 <div class="position-number" id="positionNum">---</div>
                 <div id="positionDetail" style="font-size: 1rem; margin-top: 0.5rem;">Cargando...</div>
             </div>
 
-            <!-- Alerts -->
             <div id="alertContainer"></div>
 
-            <!-- Status Info Card -->
             <div class="info-card">
                 <h2>📊 Estado de tu Turno</h2>
                 <p id="statusText" style="font-size: 1.1rem; color: var(--dark); margin: 1rem 0;">Cargando información...</p>
-                <p style="font-size: 0.9rem; color: #999; margin: 0;">
-                    Los datos se actualizan automáticamente cada segundo
-                </p>
+                <p style="font-size: 0.9rem; color: #999; margin: 0;">Los datos se actualizan automáticamente cada segundo</p>
             </div>
 
-            <!-- Completed Info -->
-            <div id="completedAlert" style="display: none;" class="completed-badge">
-                ✅ ¡TU TURNO HA SIDO ATENDIDO!
-            </div>
+            <div id="completedAlert" style="display: none;" class="completed-badge">✅ ¡TU TURNO HA SIDO ATENDIDO!</div>
 
-            <!-- Actions -->
             <div style="text-align: center; margin-top: 2rem;">
-                <button class="secondary-btn" onclick="showAnotherTurnModal()" id="anotherTurnBtn">
-                    🔄 Pedir otro turno
-                </button>
-                <p style="color: #999; font-size: 0.9rem; margin-top: 0.5rem;">
-                    ¿Necesitas atención adicional?
-                </p>
+                <button class="secondary-btn" onclick="showAnotherTurnModal()" id="anotherTurnBtn">🔄 Pedir otro turno</button>
+                <p style="color: #999; font-size: 0.9rem; margin-top: 0.5rem;">¿Necesitas atención adicional?</p>
             </div>
         </div>
     </div>
 
-    <!-- Modal para otro turno -->
     <div id="anotherTurnModal" class="modal-overlay">
         <div class="modal-dialog">
             <div class="modal-icon">🔄</div>
             <h2 class="modal-title">¿Pedir otro turno?</h2>
-            <p style="color: #666; margin: 1rem 0; line-height: 1.6;">
-                Si necesitas atención adicional o para otra persona, puedes solicitar un nuevo turno.
-                <br><br>
-                <strong>Tu turno actual  permanecerá activo.</strong>
-            </p>
+            <p style="color: #666; margin: 1rem 0; line-height: 1.6;">Si necesitas atención adicional o para otra persona, puedes solicitar un nuevo turno.<br><br><strong>Tu turno actual permanecerá activo.</strong></p>
             <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
                 <button class="btn btn-secondary" onclick="closeAnotherTurnModal()">Cancelar</button>
                 <button class="btn btn-primary" onclick="confirmAnotherTurn()">Pedir nuevo turno</button>
@@ -289,17 +97,13 @@
         </div>
     </div>
 
-    <!-- Modal -->
     <div id="turnModal" class="modal-overlay">
         <div class="modal-dialog">
             <div class="modal-icon">🎉</div>
             <h2 class="modal-title">¡Turno Asignado!</h2>
             <p style="color: #666; margin: 1rem 0;">Tu número de turno es:</p>
             <div class="modal-turn" id="modalTurnNum">---</div>
-            <p style="color: #999; margin: 1.5rem 0; line-height: 1.6;">
-                Espera cómodamente. Te notificaremos cuando sea tu turno.
-                <br><strong>No olvides tu número.</strong>
-            </p>
+            <p style="color: #999; margin: 1.5rem 0; line-height: 1.6;">Espera cómodamente. Te notificaremos cuando sea tu turno.<br><strong>No olvides tu número.</strong></p>
             <button class="btn btn-primary btn-large" onclick="closeModal()" style="margin-top: 1rem;">Entendido</button>
         </div>
     </div>
@@ -340,29 +144,22 @@
                 statusHTML = '<strong style="color: var(--warning);">⚠️ Siguiente turno (falta 1)</strong>';
                 posCard.style.background = 'linear-gradient(135deg, var(--warning), #e67e22)';
             } else if (turnsAhead === 2) {
-                statusHTML = `<strong style="color: var(--warning);">Faltan ${turnsAhead} turnos</strong>`;
+                statusHTML = '<strong style="color: var(--warning);">Faltan ' + turnsAhead + ' turnos</strong>';
                 posCard.style.background = 'linear-gradient(135deg, var(--accent), #1e8bc3)';
-                
+
                 if (!alertShown) {
-                    alertHTML = `
-                        <div class="alert-box alert-warning">
-                            <div class="alert-icon">⚠️</div>
-                            <div class="alert-text">¡Ya casi es tu turno!</div>
-                            <div class="alert-subtext">Faltan solo 2 personas</div>
-                        </div>
-                    `;
+                    alertHTML = '<div class="alert-box alert-warning"><div class="alert-icon">⚠️</div><div class="alert-text">¡Ya casi es tu turno!</div><div class="alert-subtext">Faltan solo 2 personas</div></div>';
                     alertShown = true;
                     playAlertSound();
                 }
             } else {
-                statusHTML = `<strong>Faltan ${turnsAhead} turnos para ti</strong>`;
+                statusHTML = '<strong>Faltan ' + turnsAhead + ' turnos para ti</strong>';
                 posCard.style.background = 'linear-gradient(135deg, var(--accent), #1e8bc3)';
             }
 
             document.getElementById('positionDetail').innerHTML = statusHTML;
-            document.getElementById('statusText').innerHTML = 
-                `<strong>Posición: #${data.position}</strong><br>Turnos adelante: ${turnsAhead}`;
-            
+            document.getElementById('statusText').innerHTML = '<strong>Posición: #' + data.position + '</strong><br>Turnos adelante: ' + turnsAhead;
+
             if (alertHTML) {
                 alertContainer.innerHTML = alertHTML;
             } else if (turnsAhead > 2) {
@@ -386,15 +183,15 @@
                 .then(d => {
                     userTurn = d.number;
                     localStorage.setItem('userTurn', userTurn);
-                    
+
                     document.getElementById('getTurnSection').style.display = 'none';
                     document.getElementById('turnDisplay').style.display = 'block';
                     document.getElementById('infoSections').style.display = 'block';
                     document.getElementById('turnNumDisplay').textContent = userTurn;
                     document.getElementById('modalTurnNum').textContent = userTurn;
-                    
+
                     openModal();
-                    turnify.send('get_position', { user_turn: userTurn });
+                    startPositionTracking();
                 })
                 .catch(err => {
                     alert('❌ Error al solicitar turno. Intenta de nuevo.');
@@ -405,27 +202,23 @@
                 });
         }
 
-        function openModal() {
-            document.getElementById('turnModal').classList.add('show');
-        }
+        function openModal() { document.getElementById('turnModal').classList.add('show'); }
+        function closeModal() { document.getElementById('turnModal').classList.remove('show'); }
 
-        function closeModal() {
-            document.getElementById('turnModal').classList.remove('show');
+        function startPositionTracking() {
+            if (positionCheckInterval) clearInterval(positionCheckInterval);
+            positionCheckInterval = setInterval(() => {
+                if (userTurn) {
+                    fetch('/api/position/?number=' + encodeURIComponent(userTurn))
+                        .then(r => r.json())
+                        .then(d => {
+                            updateUserPositionDisplay(d);
+                            updateRequiredDocuments();
+                        })
+                        .catch(err => console.error('Position error:', err));
+                }
+            }, 2000);
         }
-
-function startPositionTracking() {
-             if (positionCheckInterval) clearInterval(positionCheckInterval);
-             positionCheckInterval = setInterval(() => {
-                 if (userTurn) {
-                     fetch('/api/position/?number=' + encodeURIComponent(userTurn))
-                         .then(r => r.json())
-                         .then(d => {
-                             updateUserPositionDisplay(d);
-                         })
-                         .catch(err => console.error('Position error:', err));
-                 }
-             }, 2000);
-         }
 
         function updateUserPositionDisplay(d) {
             const posCard = document.getElementById('positionCard');
@@ -457,29 +250,22 @@ function startPositionTracking() {
                 statusHTML = '<strong style="color: var(--warning);">⚠️ Siguiente turno (falta 1)</strong>';
                 posCard.style.background = 'linear-gradient(135deg, var(--warning), #e67e22)';
             } else if (turnsAhead === 2) {
-                statusHTML = `<strong style="color: var(--warning);">Faltan ${turnsAhead} turnos</strong>`;
+                statusHTML = '<strong style="color: var(--warning);">Faltan ' + turnsAhead + ' turnos</strong>';
                 posCard.style.background = 'linear-gradient(135deg, var(--accent), #1e8bc3)';
-                
+
                 if (!alertShown) {
-                    alertHTML = `
-                        <div class="alert-box alert-warning">
-                            <div class="alert-icon">⚠️</div>
-                            <div class="alert-text">¡Ya casi es tu turno!</div>
-                            <div class="alert-subtext">Faltan solo 2 personas</div>
-                        </div>
-                    `;
+                    alertHTML = '<div class="alert-box alert-warning"><div class="alert-icon">⚠️</div><div class="alert-text">¡Ya casi es tu turno!</div><div class="alert-subtext">Faltan solo 2 personas</div></div>';
                     alertShown = true;
                     playAlertSound();
                 }
             } else {
-                statusHTML = `<strong>Faltan ${turnsAhead} turnos para ti</strong>`;
+                statusHTML = '<strong>Faltan ' + turnsAhead + ' turnos para ti</strong>';
                 posCard.style.background = 'linear-gradient(135deg, var(--accent), #1e8bc3)';
             }
 
             document.getElementById('positionDetail').innerHTML = statusHTML;
-            document.getElementById('statusText').innerHTML = 
-                `<strong>Posición: #${d.position}</strong><br>Turnos adelante: ${turnsAhead}`;
-            
+            document.getElementById('statusText').innerHTML = '<strong>Posición: #' + d.position + '</strong><br>Turnos adelante: ' + turnsAhead;
+
             if (alertHTML) {
                 alertContainer.innerHTML = alertHTML;
             } else if (turnsAhead > 2) {
@@ -488,163 +274,123 @@ function startPositionTracking() {
             }
         }
 
+        function updateRequiredDocuments() {
+            const docsDiv = document.getElementById('requiredDocs');
+            const docsList = document.getElementById('docsList');
+            if (!docsDiv || !userTurn) return;
+
+            const turn = turnify.turns.find(t => t.number === userTurn);
+            if (!turn || !turn.required_documents) {
+                docsDiv.style.display = 'none';
+                return;
+            }
+
+            docsDiv.style.display = 'block';
+            const requiredDocs = turn.required_documents || [];
+            const uploadedDocs = turn.uploaded_documents || [];
+
+            const docsHTML = requiredDocs.map(doc => {
+                const isUploaded = uploadedDocs.includes(doc);
+                return '<div class="doc-item"><span>' + doc + '</span><span class="doc-status " + (isUploaded ? 'style="background: #d4edda; color: #155724;"' : 'style="background: #fff3cd; color: #856404;"') + '>' + (isUploaded ? 'Subido ✓' : 'Pendiente') + '</span></div>';
+            }).join('');
+
+            docsList.innerHTML = docsHTML || '<p>No hay documentos requeridos</p>';
+        }
+
+        function uploadUserDocument(docName) {
+            if (!userTurn) return;
+            fetch('/api/upload-document/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ number: userTurn, document: docName })
+            }).then(r => r.json()).then(d => {
+                if (d.success) {
+                    turnify.fetchTurns().then(() => updateRequiredDocuments());
+                    showNotification('📄 Documento subido: ' + docName, 'success');
+                }
+            });
+        }
+
         function playAlertSound() {
             try {
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = audioContext.createOscillator();
                 const gain = audioContext.createGain();
-                
                 osc.connect(gain);
                 gain.connect(audioContext.destination);
-                
                 osc.frequency.value = 800;
                 osc.type = 'sine';
                 gain.gain.setValueAtTime(0.3, audioContext.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-                
                 osc.start(audioContext.currentTime);
                 osc.stop(audioContext.currentTime + 0.5);
             } catch(e) {}
         }
 
-        function resetTurn() {
-            if (confirm('¿Deseas solicitar otro turno?')) {
-                localStorage.removeItem('userTurn');
-                userTurn = null;
-                alertShown = false;
-                document.getElementById('getTurnSection').style.display = 'block';
-                document.getElementById('turnDisplay').style.display = 'none';
-                document.getElementById('infoSections').style.display = 'none';
-                if (positionCheckInterval) clearInterval(positionCheckInterval);
-            }
+        function showNotification(message, type) {
+            const colors = { success: '#38a169', error: '#e53e3e', warning: '#d69e2e', info: '#3182ce' };
+            const notification = document.createElement('div');
+            notification.style.cssText = 'position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 8px; color: white; font-weight: 600; z-index: 1000; animation: slideDown 0.3s ease-out; box-shadow: 0 4px 12px rgba(0,0,0,0.3); max-width: 300px;';
+            notification.style.background = colors[type] || colors.info;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => { if (notification.parentNode) notification.parentNode.removeChild(notification); }, 300);
+            }, 4000);
         }
 
-        function showAnotherTurnModal() {
-            document.getElementById('anotherTurnModal').classList.add('show');
-        }
-
-        function closeAnotherTurnModal() {
-            document.getElementById('anotherTurnModal').classList.remove('show');
-        }
+        function showAnotherTurnModal() { document.getElementById('anotherTurnModal').classList.add('show'); }
+        function closeAnotherTurnModal() { document.getElementById('anotherTurnModal').classList.remove('show'); }
 
         function confirmAnotherTurn() {
             closeAnotherTurnModal();
-            
-            // Mostrar loading en el botón
             const btn = document.getElementById('anotherTurnBtn');
             const originalText = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '⏳ Generando...';
-            
+
             fetch('/api/create/', { method: 'POST' })
                 .then(r => r.json())
                 .then(d => {
                     const newTurn = d.number;
-                    
-                    // Mostrar notificación de éxito
-                    showNotification(`✅ Nuevo turno asignado: ${newTurn}`, 'success');
-                    
-                    // Actualizar la interfaz para mostrar ambos turnos
+                    showNotification('✅ Nuevo turno asignado: ' + newTurn, 'success');
                     updateMultipleTurnsDisplay(newTurn);
-                    
-                    // Actualizar el modal de confirmación
                     setTimeout(() => {
-                        alert(`🎉 ¡Nuevo turno asignado!\n\nTu nuevo turno es: ${newTurn}\n\nTu turno anterior (${userTurn}) sigue activo.`);
+                        alert('🎉 ¡Nuevo turno asignado!\n\nTu nuevo turno es: ' + newTurn + '\n\nTu turno anterior (' + userTurn + ') sigue activo.');
                     }, 500);
                 })
-                .catch(err => {
-                    showNotification('❌ Error al solicitar turno adicional', 'error');
-                })
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                });
+                .catch(err => { showNotification('❌ Error al solicitar turno adicional', 'error'); })
+                .finally(() => { btn.disabled = false; btn.innerHTML = originalText; });
         }
 
         function updateMultipleTurnsDisplay(newTurn) {
-            // Eliminar sección anterior si existe
             const existingSection = document.getElementById('userTurnsSection');
-            if (existingSection) {
-                existingSection.remove();
-            }
-            
-            // Crear nueva sección de turnos del usuario
+            if (existingSection) existingSection.remove();
+
             const userTurnsSection = document.createElement('div');
             userTurnsSection.id = 'userTurnsSection';
             userTurnsSection.className = 'info-card';
-            userTurnsSection.innerHTML = `
-                <h2>🎫 Tus Turnos Activos</h2>
-                <div id="userTurnsList" style="margin-top: 1rem;"></div>
-            `;
+            userTurnsSection.innerHTML = '<h2>🎫 Tus Turnos Activos</h2><div id="userTurnsList" style="margin-top: 1rem;"></div>';
             document.getElementById('infoSections').insertBefore(userTurnsSection, document.getElementById('completedAlert'));
-            
-            const userTurnsList = document.getElementById('userTurnsList');
-            userTurnsList.innerHTML = `
+
+            document.getElementById('userTurnsList').innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f0f0f0; border-radius: 8px; margin: 0.5rem 0;">
-                    <div>
-                        <strong style="font-size: 1.2rem; color: #333;">${userTurn}</strong>
-                        <div style="color: #666; font-size: 0.9rem;">Turno anterior</div>
-                    </div>
+                    <div><strong style="font-size: 1.2rem; color: #333;">${userTurn}</strong><div style="color: #666; font-size: 0.9rem;">Turno anterior</div></div>
                     <span style="background: #666; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;">ANTERIOR</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #3498db; color: white; border-radius: 8px; margin: 0.5rem 0;">
-                    <div>
-                        <strong style="font-size: 1.2rem;">${newTurn}</strong>
-                        <div style="opacity: 0.9; font-size: 0.9rem;">Turno actual</div>
-                    </div>
+                    <div><strong style="font-size: 1.2rem;">${newTurn}</strong><div style="opacity: 0.9; font-size: 0.9rem;">Turno actual</div></div>
                     <span style="background: rgba(255,255,255,0.2); padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;">ACTUAL</span>
-                </div>
-            `;
-            
-            // Cambiar el foco al nuevo turno
+                </div>`;
+
             userTurn = newTurn;
             localStorage.setItem('userTurn', newTurn);
             document.getElementById('turnNumDisplay').textContent = newTurn;
-            
-            // Reiniciar el tracking de posición
             alertShown = false;
             startPositionTracking();
         }
 
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 1rem 1.5rem;
-                border-radius: 8px;
-                color: white;
-                font-weight: 600;
-                z-index: 1000;
-                animation: slideDown 0.3s ease-out;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                max-width: 300px;
-            `;
-
-            const colors = {
-                success: '#38a169',
-                error: '#e53e3e',
-                warning: '#d69e2e',
-                info: '#3182ce'
-            };
-
-            notification.style.background = colors[type] || colors.info;
-            notification.textContent = message;
-
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.style.animation = 'fadeOut 0.3s ease-out';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, 4000);
-        }
-
-        // Restaurar turno si existe
         window.addEventListener('load', () => {
             const stored = localStorage.getItem('userTurn');
             if (stored) {
@@ -660,7 +406,7 @@ function startPositionTracking() {
         window.onclick = (e) => {
             if (e.target.id === 'turnModal') closeModal();
             if (e.target.id === 'anotherTurnModal') closeAnotherTurnModal();
-        }
+        };
     </script>
 </body>
 </html>

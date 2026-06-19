@@ -13,25 +13,18 @@ from django.utils import timezone
 from datetime import timedelta, date
 import pandas as pd
 
-# Renderiza la pagina principal donde los usuarios pueden solicitar un turno
 def home(request):
-    return render(request,"home.html")
+    return render(request, "home.html")
 
-# Renderiza el panel de control del empleado (para llamar turnos)
 def employee(request):
-    return render(request,"employee.html")
+    return render(request, "employee.html")
 
-# Renderiza la pantalla de affichage (muestra el turno actual)
 def screen(request):
-    return render(request,"screen.html")
+    return render(request, "screen.html")
 
-# Renderiza el dashboard con estadisticas y reportes
 def dashboard(request):
-    return render(request,"dashboard.html")
+    return render(request, "dashboard.html")
 
-# Crea un nuevo turno y lo guarda en la base de datos
-# Parametros: service_type (general, preferential, emergency)
-# Retorna: numero del turno creado
 @api_view(['POST'])
 def create_turn(request):
     service_type = request.data.get('service_type', 'general')
@@ -39,47 +32,39 @@ def create_turn(request):
     number = generate_turn(prefix)
     turn = Turn.objects.create(number=number, service_type=service_type)
     
-    # Guardar el turno del usuario en la sesión
     request.session['user_turn'] = number
 
     if db:
         db.collection("turns").document(number).set({
-        "number":number,
-        "status":"waiting",
+        "number": number,
+        "status": "waiting",
         "service_type": service_type
         })
 
     broadcast_turn_update()
-    return Response({"number":number})
+    return Response({"number": number})
 
-# Llama al siguiente turno de la cola (el mas antiguo en espera)
-# Cambia su estado a "calling"
 @api_view(['POST'])
 def call_next(request):
-    turn=Turn.objects.filter(status="waiting").first()
+    turn = Turn.objects.filter(status="waiting").first()
     if not turn:
-        return Response({"turn":None})
+        return Response({"turn": None})
 
-    turn.status="calling"
+    turn.status = "calling"
     turn.save()
 
     if db:
         db.collection("current").document("active").set({
-        "number":turn.number
+        "number": turn.number
         })
 
     broadcast_turn_update()
-    return Response({"turn":turn.number})
+    return Response({"turn": turn.number})
 
-# Obtiene todos los turnos del dia actual con su estado y tiempo de espera
-# Retorna: lista de turnos con numero, status, fecha y tiempo de espera
 @api_view(['GET'])
 def get_all_turns(request):
-    from django.utils import timezone
-    from datetime import timedelta, date, date
-    
     today = date.today()
-    turns = Turn.objects.filter(created_at__date=date.today()).order_by('-created_at')
+    turns = Turn.objects.filter(created_at__date=today).order_by('-created_at')
     now = timezone.now()
     
     data = []
@@ -94,13 +79,13 @@ def get_all_turns(request):
             "number": t.number, 
             "status": t.status, 
             "created_at": t.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-            "wait_time": wait_time
+            "wait_time": wait_time,
+            "required_documents": t.required_documents,
+            "uploaded_documents": t.uploaded_documents
         })
     
     return Response({"turns": data})
 
-# Marca un turno especifico como completado
-# Parametros: number (numero del turno)
 @api_view(['POST'])
 def complete_turn(request):
     turn_number = request.data.get('number')
@@ -118,7 +103,6 @@ def complete_turn(request):
         return Response({"success": True, "message": f"Turn {turn_number} completed"})
     return Response({"success": False, "message": "Turn not found"}, status=404)
 
-# Elimina todos los turnos de la base de datos (funcion de administrador)
 @api_view(['POST'])
 def reset_turns(request):
     Turn.objects.all().delete()
@@ -131,8 +115,6 @@ def reset_turns(request):
     broadcast_turn_update()
     return Response({"success": True, "message": "All turns have been reset"})
 
-# Elimina un turno especifico por su numero
-# Parametros: turn_number (numero del turno a eliminar)
 @api_view(['DELETE'])
 def delete_turn(request, turn_number):
     turn = Turn.objects.filter(number=turn_number).first()
@@ -149,8 +131,6 @@ def delete_turn(request, turn_number):
     broadcast_turn_update()
     return Response({"success": True, "message": f"{turn_number} has been deleted"})
 
-# Obtiene el turno actualmente en atencion (status: calling)
-# Retorna: numero del turno o null si no hay ninguno
 @api_view(['GET'])
 def get_current_turn(request):
     turn = Turn.objects.filter(status="calling").first()
@@ -158,8 +138,6 @@ def get_current_turn(request):
         return Response({"number": turn.number, "status": turn.status})
     return Response({"number": None, "status": "none"})
 
-# Obtiene todos los turnos en espera (status: waiting)
-# Retorna: lista de turnos esperando con tiempo de espera
 @api_view(['GET'])
 def get_waiting_turns(request):
     from django.utils import timezone
@@ -178,8 +156,6 @@ def get_waiting_turns(request):
     
     return Response({"turns": data, "count": len(data)})
 
-# Obtiene el siguiente turno a ser llamado (el primero en la cola)
-# Retorna: numero del turno o null
 @api_view(['GET'])
 def get_next_turn(request):
     turn = Turn.objects.filter(status="waiting").first()
@@ -187,8 +163,6 @@ def get_next_turn(request):
         return Response({"number": turn.number, "status": "waiting"})
     return Response({"number": None, "status": "none"})
 
-# Llama a un turno especifico (no el siguiente de la cola)
-# Parametros: number (numero del turno a llamar)
 @api_view(['POST'])
 def call_specific_turn(request):
     turn_number = request.data.get('number')
@@ -197,7 +171,6 @@ def call_specific_turn(request):
     if not turn:
         return Response({"success": False, "message": "Turn not found or not waiting"}, status=404)
     
-    # Mark as calling
     turn.status = "calling"
     turn.save()
     
@@ -209,8 +182,6 @@ def call_specific_turn(request):
     broadcast_turn_update()
     return Response({"success": True, "turn": turn.number})
 
-# Termina el turno actual sin llamar al siguiente
-# Cambia el estado a "completed" y limpia el turno activo
 @api_view(['POST'])
 def finish_current_turn(request):
     current = Turn.objects.filter(status="calling").first()
@@ -224,27 +195,21 @@ def finish_current_turn(request):
         db.collection("turns").document(current.number).update({
             "status": "completed"
         })
-        # Clear current turn
         db.collection("current").document("active").set({"number": None})
     
     broadcast_turn_update()
     return Response({"success": True, "completed_turn": current.number})
 
-# Obtiene la posicion del usuario en la cola de espera
-# El numero de turno se guarda en la sesion del navegador o se pasa como parametro
-# Retorna: posicion (1 = siguiente), turnos adelante, estado
 @api_view(['GET'])
 def get_user_position(request):
     user_turn = request.GET.get('number') or request.session.get('user_turn')
     if not user_turn:
         return Response({"position": -1, "turns_ahead": -1, "message": "No turn assigned"})
     
-    # Find user's turn
     user_turn_obj = Turn.objects.filter(number=user_turn).first()
     if not user_turn_obj:
         return Response({"position": -1, "turns_ahead": -1, "message": "Turn not found"})
     
-    # Count turns ahead
     if user_turn_obj.status == "completed":
         return Response({"position": 0, "turns_ahead": 0, "status": "completed"})
     
@@ -260,8 +225,6 @@ def get_user_position(request):
         "user_turn": user_turn
     })
 
-# Envia actualizacion en tiempo real a todos los clientes WebSocket conectados
-# Notifica sobre: todos los turnos, turno actual, turnos en espera
 def broadcast_turn_update():
     try:
         channel_layer = get_channel_layer()
@@ -285,7 +248,9 @@ def broadcast_turn_update():
                     "number": t.number,
                     "status": t.status,
                     "created_at": t.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                    "wait_time": wait_time
+                    "wait_time": wait_time,
+                    "required_documents": t.required_documents,
+                    "uploaded_documents": t.uploaded_documents
                 }
                 all_data.append(turn_data)
                 
@@ -312,8 +277,6 @@ def broadcast_turn_update():
     except Exception as e:
         print(f"Broadcast error: {e}")
 
-# Obtiene estadisticas completas del sistema
-# Retorna: total turnos, hoy, esperando, llamando, completados, por tipo de servicio, promedio espera, ultimos 7 dias
 @api_view(['GET'])
 def get_statistics(request):
     now = timezone.now()
@@ -364,8 +327,6 @@ def get_statistics(request):
         "last_7_days": last_7_days
     })
 
-# Exporta todos los turnos a formato CSV
-# Descarga un archivo con todos los datos de turnos
 @api_view(['GET'])
 def export_csv(request):
     turns = Turn.objects.all().order_by('-created_at')
@@ -394,8 +355,6 @@ def export_csv(request):
     
     return response
 
-# Exporta todos los turnos a formato Excel (.xlsx)
-# Descarga un archivo Excel con los datos
 @api_view(['GET'])
 def export_excel(request):
     turns = Turn.objects.all().order_by('-created_at')
@@ -431,8 +390,6 @@ def export_excel(request):
     
     return response
 
-# Obtiene reportes del dia actual
-# Incluye: turnos por estado, por tipo, por hora, tasa de completacion
 @api_view(['GET'])
 def get_reports(request):
     now = timezone.now()
@@ -468,4 +425,29 @@ def get_reports(request):
         "completion_rate": completion_rate
     })
 
+@api_view(['POST'])
+def set_required_documents(request):
+    turn_number = request.data.get('number')
+    documents = request.data.get('documents', [])
+    turn = Turn.objects.filter(number=turn_number).first()
+    if turn:
+        turn.required_documents = documents
+        turn.save()
+        broadcast_turn_update()
+        return Response({"success": True, "required_documents": documents})
+    return Response({"success": False, "message": "Turn not found"}, status=404)
 
+@api_view(['POST'])
+def upload_document(request):
+    turn_number = request.data.get('number')
+    document = request.data.get('document')
+    turn = Turn.objects.filter(number=turn_number).first()
+    if turn:
+        if document and document not in turn.uploaded_documents:
+            turn.uploaded_documents.append(document)
+            turn.save()
+        return Response({"success": True, "uploaded_documents": turn.uploaded_documents})
+    return Response({"success": False, "message": "Turn not found"}, status=404)
+
+def login_page(request):
+    return render(request, 'login.html')
