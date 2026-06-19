@@ -12,8 +12,11 @@
         .role-option:hover { background: #e9ecef; transform: translateX(5px); }
         .role-option.selected { background: var(--accent); color: white; }
         .documents-section { margin-top: 1rem; display: none; }
-        .doc-input-group { margin-bottom: 0.5rem; }
+        .doc-input-group { margin-bottom: 0.5rem; display: flex; gap: 0.5rem; align-items: center; }
+        .doc-input-group input[type="text"] { flex: 1; }
+        .doc-input-group input[type="file"] { flex: 1; }
         .error-msg { color: #e53e3e; font-size: 0.9rem; margin-top: 0.5rem; display: none; }
+        .upload-btn { background: var(--accent); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -41,10 +44,10 @@
                     <label>Documentos adjuntos (mínimo 1 requerido):</label>
                     <div id="docInputs">
                         <div class="doc-input-group">
-                            <input type="text" class="doc-input" placeholder="Ej: Cédula de identidad" style="width: 100%; padding: 0.6rem; margin-top: 0.5rem;">
+                            <input type="file" class="doc-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="padding: 0.4rem;">
                         </div>
                     </div>
-                    <button type="button" onclick="addDocField()" style="margin-top: 0.5rem; font-size: 0.9rem;">+ Agregar documento</button>
+                    <button type="button" onclick="addFileField()" style="margin-top: 0.5rem; font-size: 0.9rem;">+ Agregar documento</button>
                     <div id="docError" class="error-msg">Debe adjuntar al menos un documento para continuar</div>
                 </div>
                 
@@ -54,6 +57,7 @@
     </div>
     <script>
         let selectedRole = '';
+        let uploadedFiles = [];
         
         function selectRole(role) {
             selectedRole = role;
@@ -68,10 +72,10 @@
             }
         }
         
-        function addDocField() {
+        function addFileField() {
             const div = document.createElement('div');
             div.className = 'doc-input-group';
-            div.innerHTML = '<input type="text" class="doc-input" placeholder="Otro documento" style="width: 100%; padding: 0.6rem; margin-top: 0.5rem;">';
+            div.innerHTML = '<input type="file" class="doc-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="padding: 0.4rem;">';
             document.getElementById('docInputs').appendChild(div);
         }
         
@@ -85,13 +89,20 @@
             
             // Validar documentos si es cliente
             if (selectedRole === 'client') {
-                const docs = Array.from(document.querySelectorAll('.doc-input')).map(i => i.value.trim()).filter(v => v);
-                if (docs.length === 0) {
+                const files = document.querySelectorAll('.doc-file');
+                const hasFiles = Array.from(files).some(f => f.files.length > 0);
+                
+                if (!hasFiles) {
                     document.getElementById('docError').style.display = 'block';
                     return;
                 }
                 document.getElementById('docError').style.display = 'none';
-                localStorage.setItem('client_documents', JSON.stringify(docs));
+                
+                // Guardar nombres de archivos
+                const fileNames = Array.from(files)
+                    .filter(f => f.files.length > 0)
+                    .map(f => f.files[0].name);
+                localStorage.setItem('client_documents', JSON.stringify(fileNames));
             }
             
             localStorage.setItem('turnify_user', user);
