@@ -48,7 +48,7 @@
             return cookieValue;
         }
 
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             var user = document.getElementById('username').value;
             var pass = document.getElementById('password').value;
@@ -64,6 +64,7 @@
 
             fetch('/api/login/', {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken') || ''
@@ -83,12 +84,16 @@
                     localStorage.setItem('turnify_role', data.user.role);
                     window.location.href = data.redirect_url;
                 } else {
+                    localStorage.removeItem('turnify_user');
+                    localStorage.removeItem('turnify_role');
                     alert(data.message || 'Credenciales inválidas');
                 }
             })
             .catch(err => {
                 btn.disabled = false;
                 btn.innerText = 'Entrar';
+                localStorage.removeItem('turnify_user');
+                localStorage.removeItem('turnify_role');
                 alert('Error de conexión. Intente nuevamente.');
                 console.error(err);
             });

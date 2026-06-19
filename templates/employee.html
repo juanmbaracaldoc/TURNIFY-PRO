@@ -267,10 +267,36 @@
         </header>
         <script>
         function logout() {
-            fetch('/api/logout/', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+            localStorage.removeItem('turnify_user');
+            localStorage.removeItem('turnify_role');
+            fetch('/api/logout/', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } })
             .then(() => { window.location.href = '/login/'; })
             .catch(() => { window.location.href = '/login/'; });
         }
+        </script>
+        
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = localStorage.getItem('turnify_user');
+            if (!user) {
+                window.location.href = '/login/';
+                return;
+            }
+            fetch('/api/verify-session/', { method: 'GET', credentials: 'same-origin' })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.authenticated || data.role !== 'employee') {
+                    localStorage.removeItem('turnify_user');
+                    localStorage.removeItem('turnify_role');
+                    window.location.href = '/login/';
+                }
+            })
+            .catch(() => {
+                localStorage.removeItem('turnify_user');
+                localStorage.removeItem('turnify_role');
+                window.location.href = '/login/';
+            });
+        });
         </script>
 
         <!-- Current Turn Section -->

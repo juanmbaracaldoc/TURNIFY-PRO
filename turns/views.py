@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -28,7 +29,7 @@ def home(request):
 def employee(request):
     if 'turnify_user' not in request.session:
         return redirect('/login/')
-    if request.session.get('turnify_role') != 'admin':
+    if request.session.get('turnify_role') != 'employee':
         return redirect('/login/')
     return render(request, "employee.html")
 
@@ -129,7 +130,7 @@ def login_user(request):
         except Exception as e:
             pass
 
-    redirect_url = '/' if register.role == 'client' else '/dashboard/'
+    redirect_url = '/' if register.role == 'client' else '/employee/'
 
     return Response({'success': True, 'redirect_url': redirect_url, 'user': {'username': username, 'role': register.role}})
 
@@ -139,7 +140,14 @@ def logout_user(request):
         del request.session['turnify_user']
     if 'turnify_role' in request.session:
         del request.session['turnify_role']
+    request.session.flush()
     return Response({'success': True, 'message': 'Sesión cerrada correctamente'})
+
+@api_view(['GET'])
+def verify_session(request):
+    if 'turnify_user' not in request.session:
+        return Response({'authenticated': False, 'role': None})
+    return Response({'authenticated': True, 'role': request.session.get('turnify_role'), 'username': request.session.get('turnify_user')})
 
 @api_view(['GET'])
 def get_users(request):
@@ -164,8 +172,15 @@ def delete_user(request, username):
 
     return Response({'success': True, 'message': f'Usuario {username_to_delete} eliminado correctamente'})
 
+@csrf_exempt
 @api_view(['POST'])
 def create_employee(request):
+    if 'turnify_user' not in request.session:
+        return Response({'success': False, 'message': 'No autenticado'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    if request.session.get('turnify_role') != 'admin':
+        return Response({'success': False, 'message': 'Solo administradores pueden crear empleados'}, status=status.HTTP_403_FORBIDDEN)
+    
     username = request.data.get('username', '').strip()
     password = request.data.get('password', '').strip()
     full_name = request.data.get('full_name', '').strip()
@@ -184,6 +199,7 @@ def create_employee(request):
         role='employee'
     )
 
+    firebase_success = True
     if db:
         try:
             db.collection("users").document(username).set({
@@ -194,14 +210,15 @@ def create_employee(request):
                 'updated_at': timezone.now().isoformat()
             })
         except Exception as e:
-            pass
+            firebase_success = False
+            print(f"Firebase error: {e}")
 
-    return Response({'success': True, 'message': 'Empleado creado correctamente', 'user': {'username': username, 'role': 'employee'}})
+    return Response({'success': True, 'message': 'Empleado creado correctamente', 'firebase': firebase_success, 'user': {'username': username, 'role': 'employee'}})
 
 @api_view(['GET'])
 def get_employees(request):
     employees = Register.objects.filter(role='employee')
-    data = [{'username': e.username, 'full_name': e.full_name, 'created_at': e.created_at.strftime('%Y-%m-%d %H:%M:%S')} for e in employees]
+    data = [{'username': e.username, 'full_name': e.full_name or e.username, 'created_at': e.created_at.strftime('%Y-%m-%d %H:%M:%S') if e.created_at else ''} for e in employees]
     return Response({'employees': data})
 
 @api_view(['POST'])

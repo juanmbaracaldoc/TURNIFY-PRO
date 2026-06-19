@@ -12,6 +12,7 @@ urlpatterns=[
     path('api/register/',views.register_user),
     path('api/login/',views.login_user),
     path('api/logout/',views.logout_user),
+    path('api/verify-session/',views.verify_session),
     path('api/create-employee/',views.create_employee),
     path('api/get-employees/',views.get_employees),
     path('api/users/',views.get_users),

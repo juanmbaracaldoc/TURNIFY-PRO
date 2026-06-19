@@ -36,8 +36,10 @@
             <button onclick="logout()" style="position: absolute; top: 1rem; right: 1rem; background: #e53e3e; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;">🚪 Cerrar Sesión</button>
         </header>
         <script>
-        function logout() {
-            fetch('/api/logout/', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+function logout() {
+            localStorage.removeItem('turnify_user');
+            localStorage.removeItem('turnify_role');
+            fetch('/api/logout/', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } })
             .then(() => { window.location.href = '/login/'; })
             .catch(() => { window.location.href = '/login/'; });
         }
@@ -137,9 +139,24 @@
         </div>
     </div>
 
-    <script src="/static/js/websocket.js"></script>
+<script src="/static/js/websocket.js"></script>
     <script src="/static/js/turns_data.js"></script>
     <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
         let statusChart, serviceChart, dailyChart, hourlyChart;
 
         function initCharts() {
@@ -221,7 +238,7 @@
                 const list = document.getElementById('employeeList');
                 if (data.employees && data.employees.length > 0) {
                     list.innerHTML = data.employees.map(emp => 
-                        '<div class="employee-list-item"><span>' + emp.full_name + ' (' + emp.username + ')</span><button onclick="deleteEmployee(\\' + emp.username + \\')">Eliminar</button></div>'
+                        '<div class="employee-list-item"><span>' + emp.full_name + ' (' + emp.username + ')</span><button onclick="deleteEmployee(\'' + emp.username + '\')">Eliminar</button></div>'
                     ).join('');
                 } else {
                     list.innerHTML = '<p style="color: #999;">No hay empleados registrados</p>';
@@ -243,7 +260,11 @@
 
             const response = await fetch('/api/create-employee/', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || ''
+                },
                 body: JSON.stringify({ username, password, full_name })
             });
             const data = await response.json();
