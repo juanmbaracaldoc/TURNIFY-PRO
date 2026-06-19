@@ -6,36 +6,14 @@
     <title>Login - Turnify Pro</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
-        .login-container {
-            max-width: 400px;
-            margin: 2rem auto;
-            padding: 2rem;
-        }
-        .login-card {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: var(--shadow);
-        }
-        .document-upload {
-            margin: 1rem 0;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        .required-doc-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #eee;
-        }
-        .doc-status {
-            font-size: 0.9rem;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-        }
-        .doc-pending { background: #fff3cd; color: #856404; }
-        .doc-uploaded { background: #d4edda; color: #155724; }
+        .login-container { max-width: 400px; margin: 2rem auto; padding: 2rem; }
+        .login-card { background: white; border-radius: 12px; padding: 2rem; box-shadow: var(--shadow); }
+        .role-option { padding: 1rem; margin: 0.5rem 0; border-radius: 8px; background: #f8f9fa; cursor: pointer; text-align: center; transition: all 0.3s; }
+        .role-option:hover { background: #e9ecef; transform: translateX(5px); }
+        .role-option.selected { background: var(--accent); color: white; }
+        .documents-section { margin-top: 1rem; display: none; }
+        .doc-input-group { margin-bottom: 0.5rem; }
+        .error-msg { color: #e53e3e; font-size: 0.9rem; margin-top: 0.5rem; display: none; }
     </style>
 </head>
 <body>
@@ -51,18 +29,79 @@
                     <label>Contraseña:</label>
                     <input type="password" id="password" style="width: 100%; padding: 0.8rem; margin-top: 0.5rem;" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar</button>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem;">Tipo de usuario:</label>
+                    <div id="roleClient" class="role-option" onclick="selectRole('client')">👤 Cliente</div>
+                    <div id="roleEmployee" class="role-option" onclick="selectRole('employee')">👨‍💼 Empleado</div>
+                    <div id="roleAdmin" class="role-option" onclick="selectRole('admin')">⚙️ Administrador</div>
+                    <input type="hidden" id="selectedRole" value="">
+                </div>
+                
+                <div id="documentsSection" class="documents-section">
+                    <label>Documentos adjuntos (mínimo 1 requerido):</label>
+                    <div id="docInputs">
+                        <div class="doc-input-group">
+                            <input type="text" class="doc-input" placeholder="Ej: Cédula de identidad" style="width: 100%; padding: 0.6rem; margin-top: 0.5rem;">
+                        </div>
+                    </div>
+                    <button type="button" onclick="addDocField()" style="margin-top: 0.5rem; font-size: 0.9rem;">+ Agregar documento</button>
+                    <div id="docError" class="error-msg">Debe adjuntar al menos un documento para continuar</div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Entrar</button>
             </form>
         </div>
     </div>
     <script>
+        let selectedRole = '';
+        
+        function selectRole(role) {
+            selectedRole = role;
+            document.querySelectorAll('.role-option').forEach(el => el.classList.remove('selected'));
+            document.getElementById('role' + role.charAt(0).toUpperCase() + role.slice(1)).classList.add('selected');
+            document.getElementById('selectedRole').value = role;
+            
+            if (role === 'client') {
+                document.getElementById('documentsSection').style.display = 'block';
+            } else {
+                document.getElementById('documentsSection').style.display = 'none';
+            }
+        }
+        
+        function addDocField() {
+            const div = document.createElement('div');
+            div.className = 'doc-input-group';
+            div.innerHTML = '<input type="text" class="doc-input" placeholder="Otro documento" style="width: 100%; padding: 0.6rem; margin-top: 0.5rem;">';
+            document.getElementById('docInputs').appendChild(div);
+        }
+        
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             var user = document.getElementById('username').value;
-            if(user) {
-                localStorage.setItem('employee_user', user);
-                window.location.href = '/employee/';
+            if (!selectedRole) {
+                alert('Por favor seleccione un tipo de usuario');
+                return;
             }
+            
+            // Validar documentos si es cliente
+            if (selectedRole === 'client') {
+                const docs = Array.from(document.querySelectorAll('.doc-input')).map(i => i.value.trim()).filter(v => v);
+                if (docs.length === 0) {
+                    document.getElementById('docError').style.display = 'block';
+                    return;
+                }
+                document.getElementById('docError').style.display = 'none';
+                localStorage.setItem('client_documents', JSON.stringify(docs));
+            }
+            
+            localStorage.setItem('turnify_user', user);
+            localStorage.setItem('turnify_role', selectedRole);
+            
+            var redirectUrl = '/';
+            if (selectedRole === 'employee') redirectUrl = '/employee/';
+            else if (selectedRole === 'admin') redirectUrl = '/dashboard/';
+            
+            window.location.href = redirectUrl;
         });
     </script>
 </body>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PANEL DE EMPLEADO - Turnify Pro</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎫</text></svg>">
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
         :root {
@@ -12,7 +13,6 @@
             --gradient-success: linear-gradient(135deg, #27ae60, #2ecc71);
             --gradient-danger: linear-gradient(135deg, #e74c3c, #c0392b);
             --gradient-primary: linear-gradient(135deg, #3498db, #2980b9);
-            --gradient-warning: linear-gradient(135deg, #f39c12, #e67e22);
             --gray-50: #f9f9f9;
             --accent: #3498db;
             --shadow: 0 5px 15px rgba(0,0,0,0.1);
@@ -31,6 +31,23 @@
             position: relative;
             overflow: hidden;
         }
+
+        .current-turn-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.1;
+        }
+
+        .current-turn-section > * {
+            position: relative;
+            z-index: 1;
+        }
+
         .turno-actual-panel {
             font-size: 6rem !important;
             font-weight: 900 !important;
@@ -38,6 +55,7 @@
             animation: pulse 1.5s infinite !important;
             margin: 1rem 0;
         }
+
         .estado-actual {
             font-size: 1.5rem;
             padding: 1.5rem;
@@ -47,19 +65,23 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
         }
+
         .control-panel {
             background: var(--lighter);
             border-radius: 16px;
             padding: 2.5rem;
             margin: 2rem 0;
             box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(255,255,255,0.1);
         }
+
         .control-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
             margin: 2rem 0;
         }
+
         .control-btn {
             padding: 1.5rem 2rem;
             border-radius: 12px;
@@ -76,9 +98,34 @@
             min-height: 80px;
             justify-content: center;
         }
-        .call-btn { background: var(--gradient-success); color: white; }
-        .finish-btn { background: var(--gradient-danger); color: white; }
-        .finish-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .call-btn {
+            background: var(--gradient-success);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(72, 187, 120, 0.39);
+        }
+
+        .call-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(72, 187, 120, 0.5);
+        }
+
+        .finish-btn {
+            background: var(--gradient-danger);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(229, 62, 62, 0.39);
+        }
+
+        .finish-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(229, 62, 62, 0.5);
+        }
+
+        .finish-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .waiting-queue {
             background: var(--lighter);
             border-radius: 16px;
@@ -86,31 +133,29 @@
             margin: 2rem 0;
             box-shadow: var(--shadow-xl);
         }
-        .documents-panel {
-            background: var(--lighter);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin: 2rem 0;
-            box-shadow: var(--shadow-xl);
-            border-left: 4px solid var(--gradient-warning);
-        }
-        .doc-item {
+
+        .queue-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.8rem;
-            margin: 0.5rem 0;
-            background: #f8f9fa;
-            border-radius: 8px;
+            margin-bottom: 1.5rem;
         }
-        .doc-status {
-            padding: 0.3rem 0.8rem;
-            border-radius: 12px;
-            font-size: 0.85rem;
+
+        .queue-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+
+        .queue-count {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
             font-weight: 600;
         }
-        .doc-pending { background: #fff3cd; color: #856404; }
-        .doc-uploaded { background: #d4edda; color: #155724; }
+
         .turn-item {
             display: flex;
             align-items: center;
@@ -123,7 +168,24 @@
             transition: all 0.3s ease;
             cursor: pointer;
         }
-        .turn-number { font-size: 1.5rem; font-weight: 700; color: #333; }
+
+        .turn-item:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow);
+            background: white;
+        }
+
+        .turn-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .turn-time {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
         .call-turn-btn {
             background: var(--gradient-primary);
             color: white;
@@ -132,92 +194,146 @@
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
+
+        .call-turn-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 179, 237, 0.4);
+        }
+
         .stats-section {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
             margin: 2rem 0;
         }
-        .stat-card { background: var(--lighter); border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: var(--shadow); }
-        .stat-number { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
-        .stat-label { color: #555; font-weight: 500; text-transform: uppercase; font-size: 0.9rem; }
+
+        .stat-card {
+            background: var(--lighter);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: #555;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+        }
+
+        .no-turns {
+            text-align: center;
+            color: #333;
+            padding: 3rem;
+            font-size: 1.2rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="dashboard">
+        <!-- Header -->
         <header style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; text-align: center;">
             <h1 style="font-size: 2.5rem; margin: 0; color: white;">👨‍💼 PANEL DE EMPLEADO</h1>
             <div style="font-size: 1.2rem; opacity: 0.9; margin-top: 0.5rem; color: white;">Turnify Pro - Gestión de Turnos</div>
         </header>
 
+        <!-- Current Turn Section -->
         <div class="current-turn-section">
             <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🎫 TURNO ACTUAL</div>
             <div id="currentTurn" class="turno-actual-panel">--</div>
-            <div id="currentStatus" class="estado-actual"><span style="opacity: 0.8;">Esperando turno...</span></div>
-        </div>
-
-        <div class="documents-panel" id="documentsPanel" style="display: none;">
-            <h3 style="margin: 0 0 1rem 0; color: #333;">📎 Documentos Requeridos</h3>
-            <div id="requiredDocsList"></div>
-            <div style="margin-top: 1rem;">
-                <input type="text" id="newDocInput" placeholder="Nombre del documento" style="padding: 0.5rem; width: 70%; border-radius: 6px; border: 1px solid #ddd;">
-                <button onclick="addRequiredDocument()" class="call-turn-btn" style="width: 25%;">Agregar</button>
+            <div id="currentStatus" class="estado-actual">
+                <span style="opacity: 0.8;">Esperando turno...</span>
             </div>
         </div>
 
+        <!-- Control Panel -->
         <div class="control-panel">
             <h2 style="margin: 0 0 1.5rem 0; color: #333;">🎛️ Panel de Control</h2>
             <div class="control-buttons">
-                <button id="callBtn" class="control-btn call-btn" onclick="turnify.callNextTurn()"><span style="font-size: 2rem;">📢</span><span>LLAMAR SIGUIENTE</span></button>
-                <button id="finishBtn" class="control-btn finish-btn" onclick="turnify.finishCurrentTurn()" disabled><span style="font-size: 2rem;">✅</span><span>TERMINAR TURNO</span></button>
+                <button id="callBtn" class="control-btn call-btn" onclick="turnify.callNextTurn()">
+                    <span style="font-size: 2rem;">📢</span>
+                    <span>LLAMAR SIGUIENTE</span>
+                </button>
+                <button id="finishBtn" class="control-btn finish-btn" onclick="turnify.finishCurrentTurn()" disabled>
+                    <span style="font-size: 2rem;">✅</span>
+                    <span>TERMINAR TURNO</span>
+                </button>
             </div>
         </div>
 
+        <!-- Stats Section -->
         <div class="stats-section">
-            <div class="stat-card"><div id="waitingCount" class="stat-number">0</div><div class="stat-label">Turnos Esperando</div></div>
-            <div class="stat-card"><div id="totalToday" class="stat-number">0</div><div class="stat-label">Total Hoy</div></div>
-            <div class="stat-card"><div id="processedToday" class="stat-number">0</div><div class="stat-label">Procesados</div></div>
+            <div class="stat-card">
+                <div id="waitingCount" class="stat-number">0</div>
+                <div class="stat-label">Turnos Esperando</div>
+            </div>
+            <div class="stat-card">
+                <div id="totalToday" class="stat-number">0</div>
+                <div class="stat-label">Total Hoy</div>
+            </div>
+            <div class="stat-card">
+                <div id="processedToday" class="stat-number">0</div>
+                <div class="stat-label">Procesados</div>
+            </div>
         </div>
 
+        <!-- Waiting Queue -->
         <div class="waiting-queue">
-            <div class="queue-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h2 class="queue-title" style="font-size: 1.8rem; font-weight: 700; color: #333; margin: 0;">📋 Cola de Espera</h2>
-                <span id="queueCount" class="queue-count" style="background: var(--gradient-primary); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;">0 turnos</span>
+            <div class="queue-header">
+                <h2 class="queue-title">📋 Cola de Espera</h2>
+                <span id="queueCount" class="queue-count">0 turnos</span>
             </div>
-            <div id="waitingQueue"><p style="text-align: center; color: #333;">No hay turnos en espera</p></div>
+            <div id="waitingQueue">
+                <div class="no-turns">
+                    <p>No hay turnos en espera</p>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="/static/js/websocket.js"></script>
     <script src="/static/js/turns_data.js"></script>
     <script>
+        // Employee page initialization
         document.addEventListener('DOMContentLoaded', function() {
-            setInterval(() => { turnify.fetchTurns(); turnify.updateEmployee(); }, 2000);
+            // Auto-update every 2 seconds for real-time
+            setInterval(() => {
+                turnify.fetchTurns();
+                turnify.updateEmployee();
+            }, 2000);
+            
+            // Initial fetch
             turnify.fetchTurns();
         });
-        
-        async function addRequiredDocument() {
-            const input = document.getElementById('newDocInput');
-            const docName = input.value.trim();
-            if (!docName || !currentTurnNumber) return;
-            const response = await fetch('/api/documents/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ number: currentTurnNumber, documents: [docName] })
-            });
-            const data = await response.json();
-            if (data.success) { input.value = ''; updateDocumentsPanel(); }
-        }
-        
-        let currentTurnNumber = null;
-        
-        function updateDocumentsPanel() {
-            const panel = document.getElementById('documentsPanel');
-            const list = document.getElementById('requiredDocsList');
-            if (!currentTurnNumber) { panel.style.display = 'none'; return; }
-            panel.style.display = 'block';
-        }
     </script>
 </body>
 </html>
