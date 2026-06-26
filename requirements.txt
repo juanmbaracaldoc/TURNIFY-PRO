@@ -12,3 +12,5 @@ openpyxl
 pandas
 whitenoise
 pyjwt>=2.8.0
+
+node==2.0.0
