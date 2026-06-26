@@ -1,0 +1,74 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.virtual-turns-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  flex: 1;
+}
+
+.virtual-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.virtual-card h1 {
+  color: white;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: #aaa;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.form-section {
+  margin-bottom: 1.5rem;
+}
+
+.form-section label {
+  color: #aaa;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.form-section select,
+.form-section textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: 2px solid var(--accent, #00f2fe);
+  background: var(--dark, #1a1a2e);
+  color: white;
+  font-size: 1rem;
+}
+
+.btn-large {
+  width: 100%;
+  padding: 1.2rem;
+  font-size: 1.2rem;
+}
+
+.turn-result {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(39, 174, 96, 0.1);
+  border: 1px solid #27ae60;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.turn-number {
+  font-size: 3rem;
+  color: #27ae60;
+  font-weight: bold;
+  margin: 1rem 0;
+}

@@ -1,0 +1,29 @@
+<nav class="navbar">
+  <div class="navbar-container">
+    <div class="navbar-brand">
+      <img src="/assets/logo.png" alt="Turnify Pro Logo" class="navbar-logo" onerror="this.style.display='none'">
+      <span class="navbar-title">Turnify Pro</span>
+    </div>
+    
+    <div class="navbar-menu" *ngIf="isClient()">
+      <a routerLink="/home" class="navbar-link">🏠 Inicio</a>
+      <a routerLink="/profile" class="navbar-link">👤 Modificar Perfil</a>
+      <a routerLink="/virtual-turns" class="navbar-link">💻 Turnos Virtuales</a>
+      <a routerLink="/my-turns" class="navbar-link">🎫 Mis Turnos</a>
+      <button (click)="logout()" class="navbar-logout-btn">🚪 Cerrar Sesión</button>
+    </div>
+
+    <div class="navbar-menu" *ngIf="isEmployee()">
+      <a routerLink="/employee" class="navbar-link">🏠 Panel</a>
+      <a routerLink="/manage-users" class="navbar-link">👥 Modificar Usuarios</a>
+      <a routerLink="/reschedule-turns" class="navbar-link">📅 Reagendar Turnos</a>
+      <button (click)="logout()" class="navbar-logout-btn">🚪 Cerrar Sesión</button>
+    </div>
+
+    <div class="navbar-menu" *ngIf="isAdmin()">
+      <a routerLink="/dashboard" class="navbar-link">🏠 Dashboard</a>
+      <a routerLink="/home" class="navbar-link">🎫 Turnos</a>
+      <button (click)="logout()" class="navbar-logout-btn">🚪 Cerrar Sesión</button>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,32 @@
+<app-navbar [role]="'client'"></app-navbar>
+
+<div class="virtual-turns-container fade-in-up">
+  <div class="virtual-card">
+    <h1>💻 Turnos Virtuales</h1>
+    <p class="subtitle">Solicita un turno sin necesidad de acudir presencialmente</p>
+
+    <div class="form-section">
+      <label>Tipo de atención virtual:</label>
+      <select id="virtualServiceType">
+        <option value="general">📄 General (A)</option>
+        <option value="preferential">🌟 Preferencial (B)</option>
+        <option value="vip">💎 VIP (V)</option>
+      </select>
+    </div>
+
+    <div class="form-section">
+      <label>Motivo de la consulta:</label>
+      <textarea id="virtualReason" rows="4" placeholder="Describe brevemente el motivo de tu consulta..."></textarea>
+    </div>
+
+    <button class="btn btn-primary btn-large" onclick="requestVirtualTurn()">🎯 Solicitar Turno Virtual</button>
+
+    <div id="virtualTurnResult" style="display: none;" class="turn-result">
+      <h3>✅ Turno Virtual Asignado</h3>
+      <div class="turn-number" id="virtualTurnNum">---</div>
+      <p>Te contactaremos vía correo o teléfono según la información registrada.</p>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

@@ -1,0 +1,48 @@
+<app-navbar [role]="'employee'"></app-navbar>
+
+<div class="reschedule-container fade-in-up">
+  <div class="reschedule-card">
+    <h1>📅 Reagendar Turnos</h1>
+    
+    <div *ngIf="loading" class="loading-state">
+      Cargando turnos...
+    </div>
+
+    <table *ngIf="!loading && turns.length > 0" class="turns-table">
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Cliente</th>
+          <th>Tipo</th>
+          <th>Estado</th>
+          <th>Fecha</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let turn of turns">
+          <td class="turn-number">{{ turn.number }}</td>
+          <td>{{ turn.user?.full_name || turn.user?.username }}</td>
+          <td>{{ turn.service_type }}</td>
+          <td>
+            <span class="status-badge" [class.status-waiting]="turn.status === 'waiting'" 
+                                 [class.status-calling]="turn.status === 'calling'"
+                                 [class.status-completed]="turn.status === 'completed'">
+              {{ turn.status }}
+            </span>
+          </td>
+          <td>{{ turn.created_at }}</td>
+          <td>
+            <button *ngIf="turn.status === 'waiting'" (click)="rescheduleTurn(turn.id)" class="btn-reschedule">🔄 Reagendar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="!loading && turns.length === 0" class="empty-state">
+      No hay turnos para reagendar
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

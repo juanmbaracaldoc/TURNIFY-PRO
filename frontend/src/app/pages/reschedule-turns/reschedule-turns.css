@@ -1,0 +1,88 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.reschedule-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  flex: 1;
+}
+
+.reschedule-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.reschedule-card h1 {
+  color: white;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #aaa;
+}
+
+.turns-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: white;
+}
+
+.turns-table th,
+.turns-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.turns-table th {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.turn-number {
+  font-weight: bold;
+  color: var(--accent, #00f2fe);
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+.status-waiting {
+  background: rgba(243, 156, 18, 0.2);
+  color: #f39c12;
+}
+
+.status-calling {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+}
+
+.status-completed {
+  background: rgba(39, 174, 96, 0.2);
+  color: #27ae60;
+}
+
+.btn-reschedule {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-reschedule:hover {
+  background: #2980b9;
+}

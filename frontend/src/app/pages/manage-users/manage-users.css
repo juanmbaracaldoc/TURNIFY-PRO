@@ -1,0 +1,62 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.manage-users-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  flex: 1;
+}
+
+.users-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.users-card h1 {
+  color: white;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #aaa;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: white;
+}
+
+.users-table th,
+.users-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.users-table th {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.btn-delete {
+  background: #e53e3e;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-delete:hover {
+  background: #c53030;
+}

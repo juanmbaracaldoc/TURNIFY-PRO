@@ -1,3 +1,9 @@
-/* Keep empty; component styles should be page-level.
-   This file exists to avoid accidental default Angular styles. */
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.main-content {
+  min-height: calc(100vh - 120px);
+}
 
