@@ -1,0 +1,91 @@
+<div class="home-container fade-in-up">
+  <div class="welcome-section">
+    <div class="welcome-icon"></div>
+    <h1 class="welcome-title">Turnify Pro</h1>
+    <p class="welcome-subtitle">Sistema Inteligente de Gestión de Turnos</p>
+  </div>
+
+  <div id="documentsSection" *ngIf="documents.length > 0">
+    <div class="info-card">
+      <h2>Documentos Adjuntos</h2>
+      <div style="margin-top: 1rem;">
+        <div class="doc-item doc-uploaded" *ngFor="let doc of documents">{{ doc }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="getTurnSection" *ngIf="!userTurn">
+    <div style="margin-bottom: 1.5rem;">
+      <label style="color: rgba(255,255,255,0.9); font-size: 0.9rem;">Tipo de atención:</label>
+      <select [(ngModel)]="serviceType" class="form-control form-select" style="max-width: 320px; margin: 0.5rem auto 0; background: rgba(255,255,255,0.95); border: 2px solid rgba(255,255,255,0.3); color: var(--dark);">
+        <option value="general">General (A)</option>
+        <option value="preferential">Preferencial (B)</option>
+        <option value="vip">VIP (V)</option>
+        <option value="emergency">Emergencia (E)</option>
+      </select>
+    </div>
+    <button class="get-turn-btn" (click)="getTurn()">Pedir mi Turno</button>
+    <p style="text-align: center; color: rgba(255,255,255,0.8); margin-top: 1rem; font-size: 0.95rem;">Haz clic para obtener tu número de turno</p>
+  </div>
+
+  <div id="turnDisplay" *ngIf="userTurn" class="turn-display">
+    <div style="color: white; font-size: 1.1rem; margin-bottom: 0.5rem;">Tu turno asignado</div>
+    <div class="turn-number-big" id="turnNumDisplay">{{ userTurn }}</div>
+  </div>
+
+  <div id="infoSections" *ngIf="userTurn">
+    <div id="positionCard" class="position-display">
+      <div class="position-label">Tu Posición en la Cola</div>
+      <div class="position-number" id="positionNum">{{ positionNum || '---' }}</div>
+      <div id="positionDetail" style="font-size: 1rem; margin-top: 0.5rem;">{{ positionDetail }}</div>
+    </div>
+
+    <div id="alertContainer">
+      <div class="alert-box alert-warning" *ngIf="alertShown && !completed">
+        <div class="alert-icon"></div>
+        <div class="alert-text">Ya casi es tu turno</div>
+        <div class="alert-subtext">Faltan solo 2 personas</div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h2>Estado de tu Turno</h2>
+      <p id="statusText" style="font-size: 1.1rem; color: var(--dark); margin: 1rem 0;">{{ statusText }}</p>
+      <p style="font-size: 0.9rem; color: var(--gray); margin: 0;">Los datos se actualizan automáticamente cada segundo</p>
+    </div>
+
+    <div id="completedAlert" *ngIf="completed" class="completed-badge">TU TURNO HA SIDO ATENDIDO</div>
+
+    <div style="text-align: center; margin-top: 2rem;" *ngIf="!completed">
+      <button class="secondary-btn" (click)="showAnotherTurnModal()" id="anotherTurnBtn">Pedir otro turno</button>
+      <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-top: 0.5rem;">¿Necesitas atención adicional?</p>
+    </div>
+  </div>
+
+  <div id="logoutBtn" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+    <button (click)="logout()" class="btn btn-danger btn-sm">Cerrar Sesión</button>
+  </div>
+
+  <div id="turnModal" class="modal-overlay" [class.show]="showTurnModal">
+    <div class="modal-dialog">
+      <div class="modal-icon"></div>
+      <h2 class="modal-title">Turno Asignado</h2>
+      <p style="color: var(--gray); margin: 1rem 0;">Tu número de turno es:</p>
+      <div class="modal-turn" id="modalTurnNum">{{ userTurn }}</div>
+      <p style="color: var(--gray); margin: 1.5rem 0; line-height: 1.6;">Espera cómodamente. Te notificaremos cuando sea tu turno.<br><strong>No olvides tu número.</strong></p>
+      <button class="btn btn-primary btn-lg" (click)="closeModal()" style="margin-top: 1rem;">Entendido</button>
+    </div>
+  </div>
+
+  <div id="anotherTurnModalOverlay" class="modal-overlay" [class.show]="anotherTurnModal">
+    <div class="modal-dialog">
+      <div class="modal-icon"></div>
+      <h2 class="modal-title">¿Pedir otro turno?</h2>
+      <p style="color: var(--gray); margin: 1rem 0; line-height: 1.6;">Si necesitas atención adicional o para otra persona, puedes solicitar un nuevo turno.<br><br><strong>Tu turno actual permanecerá activo.</strong></p>
+      <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+        <button class="btn btn-secondary" (click)="closeAnotherTurnModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="confirmAnotherTurn()">Pedir nuevo turno</button>
+      </div>
+    </div>
+  </div>
+</div>

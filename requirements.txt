@@ -11,3 +11,4 @@ daphne
 openpyxl
 pandas
 whitenoise
+pyjwt>=2.8.0

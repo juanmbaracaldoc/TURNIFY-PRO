@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import os
 
@@ -37,7 +36,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [BASE_DIR / 'frontend' / 'dist' / 'frontend' / 'browser'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -60,12 +59,16 @@ DATABASES={
 }
 
 STATIC_URL='/static/'
-STATICFILES_DIRS=[BASE_DIR/'static']
+STATICFILES_DIRS=[BASE_DIR/'frontend'/'dist'/'frontend'/'browser']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
 
 DEFAULT_AUTO_FIELD='django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS=True
+
+JWT_SECRET_KEY = 'turnify-pro-secret-key-2024'
+JWT_ALGORITHM = 'HS256'
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 ASGI_APPLICATION = 'config.asgi.application'
 
