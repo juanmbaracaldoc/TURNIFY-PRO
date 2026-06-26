@@ -1,0 +1,57 @@
+/* Screen page styles (basic, to ensure UI is not blurred). */
+
+:host { display:block; }
+
+.header-bar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  margin: 1rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+}
+
+.header-left { font-weight:700; }
+.header-right { display:flex; gap: 1.5rem; font-weight:600; }
+
+.screen-container {
+  margin: 0 1rem 1rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.main-content {
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.calling-section, .next-section {
+  background: rgba(0,0,0,0.25);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.calling-label, .next-label { font-weight:800; margin-bottom: 0.75rem; }
+.calling-number {
+  font-size: 5rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.next-turn-number {
+  font-size: 3.5rem;
+  font-weight: 900;
+}
+
+.next-turns-display .empty-state { opacity:0.7; }
+
+@media (max-width: 900px){
+  .main-content{ grid-template-columns: 1fr; }
+}
+

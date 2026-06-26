@@ -1,0 +1,50 @@
+<div>
+  <div class="header-bar">
+    <div class="header-left">🎫 Turnify Pro - Pantalla Digital</div>
+    <div class="header-right">
+      <div class="stats-display">👥 En espera: <span id="waitingCount">0</span></div>
+      <div class="clock-display">🕐 <span id="timer">--:--:--</span></div>
+    </div>
+  </div>
+
+  <div class="screen-container">
+    <div class="main-content">
+      <div class="calling-section">
+        <div class="calling-label">📢 Atendiendo</div>
+        <p class="calling-number" id="currentNumber">---</p>
+      </div>
+
+      <div class="next-section">
+        <div class="next-label">▼ Próximos a ser llamados</div>
+        <div class="next-turns-display" id="nextTurnsDisplay"><div class="empty-state">...esperando</div></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/websocket.js"></script>
+  <script src="/static/js/turns_data.js"></script>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('timer').textContent = now.toLocaleTimeString('es-ES');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    document.addEventListener('DOMContentLoaded', function() {
+      setInterval(() => {
+        const waiting = turnify.stats.waiting;
+        const current = turnify.currentTurn;
+        const next = turnify.turns.find(t => t.status === 'waiting');
+
+        document.getElementById('waitingCount').textContent = waiting;
+        if (current) document.getElementById('currentNumber').textContent = current.number;
+
+        const nextDisplay = document.getElementById('nextTurnsDisplay');
+        if (nextDisplay && next) nextDisplay.innerHTML = `<div class="next-turn-number">${next.number}</div>`;
+      }, 1000);
+    });
+  </script>
+</div>
+

@@ -1,0 +1,23 @@
+/* Global styles to keep UI crisp (avoid blurred text/colors). */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: #0b1220;
+  color: #fff;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* If legacy JS expects these variables */
+:root {
+  --accent: #667eea;
+  --dark: #0b1220;
+}
+

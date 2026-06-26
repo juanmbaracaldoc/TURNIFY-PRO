@@ -1,0 +1,8 @@
+/* Dashboard page styles */
+:host { display:block; }
+
+.dashboard { padding: 1rem; }
+
+/* Keep readable, not blurred */
+* { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
