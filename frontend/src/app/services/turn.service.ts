@@ -31,8 +31,8 @@ export class TurnService {
     return this.http.get(`${this.apiUrl}/all/`, { headers: this.getHeaders() });
   }
 
-  createTurn(service_type: string = 'general'): Observable<any> {
-    return this.http.post(`${this.apiUrl}/create/`, { service_type }, { headers: this.getHeaders() });
+  createTurn(service_type: string = 'general', sede: string = 'MOSQUERA'): Observable<any> {
+    return this.http.post(`${this.apiUrl}/create/`, { service_type, sede }, { headers: this.getHeaders() });
   }
 
   callNext(): Observable<any> {
@@ -45,6 +45,14 @@ export class TurnService {
 
   finishCurrent(): Observable<any> {
     return this.http.post(`${this.apiUrl}/finish/`, {}, { headers: this.getHeaders() });
+  }
+
+  rescheduleCurrent(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reschedule/`, {}, { headers: this.getHeaders() });
+  }
+
+  cancelCurrent(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/cancel/`, {}, { headers: this.getHeaders() });
   }
 
   getPosition(turn_number: string): Observable<any> {

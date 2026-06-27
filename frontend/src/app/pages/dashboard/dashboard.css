@@ -1,5 +1,10 @@
-/* Dashboard CSS Profesional */
-:host { display: block; }
+/* Dashboard CSS Profesional - Paleta azul celeste */
+
+:host {
+  display: block;
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+  min-height: 100vh;
+}
 
 .dashboard {
   max-width: 1600px;
@@ -15,18 +20,19 @@
   margin-bottom: 2rem;
   padding: 1.5rem 2rem;
   background: white;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
 }
 
 .dashboard-header h1 {
   font-size: 1.75rem;
   font-weight: 800;
-  color: var(--dark);
+  color: #1e293b;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  letter-spacing: -0.01em;
 }
 
 /* Stats Grid */
@@ -39,13 +45,17 @@
 
 .stat-card {
   background: white;
-  padding: 1.5rem;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  padding: 1.75rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
-  transition: var(--transition);
-  position: relative;
-  overflow: hidden;
+  text-align: center;
+  transition: all 0.25s ease;
+}
+
+.stat-card:hover {
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
 .stat-card::before {
@@ -53,83 +63,23 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--accent);
-}
-
-.stat-card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-3px);
-}
-
-.stat-card .stat-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-sm);
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
-}
-
-.stat-card .stat-icon.users {
-  background: #dbeafe;
-}
-
-.stat-card .stat-icon.clients {
-  background: #dbeafe;
-}
-
-.stat-card .stat-icon.employees {
-  background: #fce7f3;
-}
-
-.stat-card .stat-icon.turns {
-  background: #fef3c7;
-}
-
-.stat-card .stat-icon.active {
-  background: #fee2e2;
-}
-
-.stat-card .stat-icon.attended {
-  background: #d1fae5;
-}
-
-.stat-card .stat-icon.cancelled {
-  background: #f1f5f9;
-}
-
-.stat-card .stat-icon.presencial {
-  background: #dbeafe;
-}
-
-.stat-card .stat-icon.virtual {
-  background: #cffafe;
-}
-
-.stat-card .stat-icon.time {
-  background: #f3e8ff;
-}
-
-.stat-card .stat-icon.docs {
-  background: #fce7f3;
+  width: 0;
+  height: 0;
 }
 
 .stat-number {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 800;
-  color: var(--accent);
+  color: #4a90f7;
   line-height: 1;
   margin-bottom: 0.5rem;
+  font-family: 'Inter', monospace;
 }
 
 .stat-label {
   font-size: 0.875rem;
-  color: var(--gray);
-  font-weight: 500;
+  color: #64748b;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -144,45 +94,41 @@
 
 .chart-card {
   background: white;
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  box-shadow: var(--shadow);
+  border-radius: 12px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
-  transition: var(--transition);
+  transition: all 0.25s ease;
 }
 
 .chart-card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
 }
 
 .chart-card h3 {
-  color: var(--dark);
+  color: #1e293b;
   margin: 0 0 1.25rem 0;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.chart-card canvas {
-  max-height: 300px;
-}
-
 /* Employee Section */
 .employee-section {
   background: white;
-  border-radius: var(--radius);
+  border-radius: 16px;
   padding: 2rem;
   margin-bottom: 2rem;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
 }
 
 .employee-section h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--dark);
+  color: #1e293b;
   margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
@@ -196,30 +142,26 @@
   margin-bottom: 2rem;
   padding: 1.5rem;
   background: #f8fafc;
-  border-radius: var(--radius);
-  border: 2px dashed #e2e8f0;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
 }
 
 .employee-form input,
 .employee-form select {
   padding: 0.75rem 1rem;
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   border: 1.5px solid #e2e8f0;
   font-size: 0.9375rem;
-  font-family: var(--font-primary);
+  font-family: var(--font-primary, 'Inter', sans-serif);
   background: white;
-  transition: var(--transition);
+  transition: all 0.2s ease;
 }
 
 .employee-form input:focus,
 .employee-form select:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.employee-form .btn {
-  align-self: end;
+  border-color: #4a90f7;
+  box-shadow: 0 0 0 3px rgba(74, 144, 247, 0.1);
 }
 
 /* Employee Table */
@@ -228,14 +170,14 @@
   border-collapse: separate;
   border-spacing: 0;
   background: white;
-  border-radius: var(--radius);
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
 }
 
 .employee-table thead {
-  background: var(--gradient-primary);
+  background: #4a90f7;
   color: white;
 }
 
@@ -250,7 +192,7 @@
 
 .employee-table tbody tr {
   border-bottom: 1px solid #f1f5f9;
-  transition: var(--transition);
+  transition: all 0.25s ease;
 }
 
 .employee-table tbody tr:hover {
@@ -260,7 +202,7 @@
 .employee-table tbody td {
   padding: 1rem 1.25rem;
   font-size: 0.9375rem;
-  color: var(--dark);
+  color: #1e293b;
 }
 
 .employee-table tbody td:last-child {
@@ -272,16 +214,16 @@
 /* Reports Section */
 .reports-section {
   background: white;
-  border-radius: var(--radius);
+  border-radius: 16px;
   padding: 2rem;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
 }
 
 .reports-section h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--dark);
+  color: #1e293b;
   margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
@@ -292,19 +234,18 @@
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem 1.5rem;
+  padding: 0.875rem 1.5rem;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.25s ease;
   margin: 0.25rem;
 }
 
 .btn-export:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .btn-export.csv {
@@ -313,7 +254,7 @@
 }
 
 .btn-export.excel {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, #4a90f7, #2563eb);
   color: white;
 }
 
@@ -321,10 +262,9 @@
 .edit-form {
   background: #fffbeb;
   padding: 1.5rem;
-  border-radius: var(--radius);
+  border-radius: 10px;
   margin-bottom: 2rem;
   border: 1px solid #fde68a;
-  animation: fadeInDown 0.3s ease-out;
 }
 
 .edit-form h3 {
@@ -372,7 +312,7 @@
 
 @media (max-width: 768px) {
   .dashboard {
-    padding: 1rem;
+    padding: 1.5rem;
   }
 
   .dashboard-header {
@@ -396,11 +336,6 @@
   .employee-table thead th,
   .employee-table tbody td {
     padding: 0.75rem;
-  }
-
-  .btn-export {
-    width: 100%;
-    justify-content: center;
   }
 }
 

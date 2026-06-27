@@ -1,32 +1,65 @@
-<app-navbar [role]="'client'"></app-navbar>
-
 <div class="virtual-turns-container fade-in-up">
   <div class="virtual-card">
     <h1>💻 Turnos Virtuales</h1>
-    <p class="subtitle">Solicita un turno sin necesidad de acudir presencialmente</p>
+    <p class="subtitle">Atiende turnos virtuales desde esta sección</p>
 
-    <div class="form-section">
-      <label>Tipo de atención virtual:</label>
-      <select id="virtualServiceType">
-        <option value="general">📄 General (A)</option>
-        <option value="preferential">🌟 Preferencial (B)</option>
-        <option value="vip">💎 VIP (V)</option>
-      </select>
+    <!-- Filtros -->
+    <div class="filters-section">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Filtrar por Sede:</label>
+          <select [(ngModel)]="filterSede" class="form-control form-select" (change)="applyFilters()">
+            <option value="">Todas las sedes</option>
+            <option *ngFor="let sede of sedes">{{ sede }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Filtrar por Estado:</label>
+          <select [(ngModel)]="filterStatus" class="form-control form-select" (change)="applyFilters()">
+            <option value="">Todos los estados</option>
+            <option value="waiting">Esperando</option>
+            <option value="called">Llamando</option>
+            <option value="finished">Finalizado</option>
+            <option value="cancelled">Cancelado</option>
+          </select>
+        </div>
+      </div>
     </div>
 
-    <div class="form-section">
-      <label>Motivo de la consulta:</label>
-      <textarea id="virtualReason" rows="4" placeholder="Describe brevemente el motivo de tu consulta..."></textarea>
+    <!-- Turnos Virtuales -->
+    <div class="turns-list" *ngIf="filteredTurns.length > 0">
+      <table class="turns-table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Sede</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let turn of filteredTurns">
+            <td class="turn-number">{{ turn.number }}</td>
+            <td>{{ turn.sede }}</td>
+            <td>
+              <span class="status-badge" [class.status-waiting]="turn.status === 'waiting'"
+                                   [class.status-calling]="turn.status === 'called'"
+                                   [class.status-completed]="turn.status === 'finished'">
+                {{ turn.status }}
+              </span>
+            </td>
+            <td>{{ turn.created_at }}</td>
+            <td>
+              <button *ngIf="turn.status === 'waiting'" (click)="attendVirtual(turn.number)" class="btn-attend">Atender</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
-    <button class="btn btn-primary btn-large" onclick="requestVirtualTurn()">🎯 Solicitar Turno Virtual</button>
-
-    <div id="virtualTurnResult" style="display: none;" class="turn-result">
-      <h3>✅ Turno Virtual Asignado</h3>
-      <div class="turn-number" id="virtualTurnNum">---</div>
-      <p>Te contactaremos vía correo o teléfono según la información registrada.</p>
+    <div class="empty-state" *ngIf="filteredTurns.length === 0">
+      <p>No hay turnos virtuales registrados</p>
     </div>
   </div>
 </div>
-
-<app-footer></app-footer>

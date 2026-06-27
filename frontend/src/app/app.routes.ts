@@ -19,7 +19,7 @@ export const routes: Routes = [
   { path: 'register', component: Register },
   { path: 'home', component: Home, canActivate: [authGuard] },
   { path: 'profile', component: Profile, canActivate: [authGuard, roleGuard], data: { roles: ['client'] } },
-  { path: 'virtual-turns', component: VirtualTurns, canActivate: [authGuard, roleGuard], data: { roles: ['client'] } },
+  { path: 'virtual-turns', component: VirtualTurns, canActivate: [authGuard, roleGuard], data: { roles: ['client', 'employee'] } },
   { path: 'my-turns', component: MyTurns, canActivate: [authGuard, roleGuard], data: { roles: ['client'] } },
   { path: 'dashboard', component: Dashboard, canActivate: [authGuard, roleGuard], data: { roles: ['admin'] } },
   { path: 'employee', component: Employee, canActivate: [authGuard, roleGuard], data: { roles: ['employee'] } },

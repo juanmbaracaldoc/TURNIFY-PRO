@@ -59,7 +59,7 @@ DATABASES={
 }
 
 STATIC_URL='/static/'
-STATICFILES_DIRS=[BASE_DIR/'frontend'/'dist'/'frontend'/'browser']
+STATICFILES_DIRS=[BASE_DIR/'static', BASE_DIR/'frontend'/'dist'/'frontend'/'browser']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
 

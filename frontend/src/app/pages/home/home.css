@@ -1,7 +1,7 @@
 /* Home Page Styles - Professional Design */
 .home-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
   padding: 2rem;
   position: relative;
   overflow-x: hidden;
@@ -14,8 +14,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+  background: radial-gradient(circle at 20% 80%, rgba(74, 144, 247, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(107, 182, 255, 0.08) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -35,31 +35,39 @@
 .welcome-title {
   font-size: 3rem;
   font-weight: 800;
-  color: white;
+  color: #1e293b;
   margin-bottom: 0.5rem;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  background: linear-gradient(135deg, #fff 0%, #e0e7ff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  letter-spacing: -0.02em;
+  font-family: 'Inter', sans-serif;
 }
 
 .welcome-subtitle {
   font-size: 1.25rem;
-  color: rgba(255,255,255,0.85);
-  font-weight: 400;
+  color: #4a90f7;
+  font-weight: 500;
   max-width: 600px;
   margin: 0 auto;
+}
+
+.welcome-user {
+  font-size: 1.1rem;
+  color: #334155;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(74, 144, 247, 0.1);
+  border-radius: 25px;
+  display: inline-block;
 }
 
 /* Cards */
 .info-card {
   background: white;
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
   padding: 2rem;
   margin-top: 2rem;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
   animation: fadeInUp 0.6s ease-out;
   animation-fill-mode: both;
 }
@@ -72,7 +80,7 @@
 .info-card h2 {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--dark);
+  color: #1e293b;
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
@@ -86,7 +94,7 @@
   gap: 0.75rem;
   padding: 0.875rem 1rem;
   background: #f0fdf4;
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   margin-bottom: 0.5rem;
   color: #166534;
   font-weight: 500;
@@ -101,9 +109,9 @@
 
 #getTurnSection label {
   display: block;
-  color: rgba(255,255,255,0.9);
+  color: #334155;
   font-size: 0.9375rem;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 0.75rem;
 }
 
@@ -113,26 +121,21 @@
   max-width: 320px;
   margin: 0 auto 1.5rem;
   padding: 0.875rem 1rem;
-  border-radius: var(--radius-sm);
-  border: 2px solid rgba(255,255,255,0.3);
-  background: rgba(255,255,255,0.95);
-  font-size: 1rem;
-  font-family: var(--font-primary);
-  color: var(--dark);
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  background: white;
+  font-size: 0.95rem;
+  font-family: var(--font-primary, 'Inter', sans-serif);
+  color: #1e293b;
   font-weight: 500;
   cursor: pointer;
-  transition: var(--transition);
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  padding-right: 2.5rem;
+  transition: all 0.2s ease;
 }
 
 #getTurnSection select:focus {
   outline: none;
-  border-color: white;
-  box-shadow: 0 0 0 3px rgba(255,255,255,0.2);
+  border-color: #4a90f7;
+  box-shadow: 0 0 0 3px rgba(74, 144, 247, 0.1);
 }
 
 .get-turn-btn {
@@ -140,22 +143,22 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1.125rem 2.5rem;
-  background: white;
-  color: var(--accent);
+  background: #4a90f7;
+  color: white;
   border: none;
-  border-radius: var(--radius);
-  font-size: 1.125rem;
-  font-weight: 700;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: var(--transition);
-  box-shadow: var(--shadow-lg);
-  font-family: var(--font-primary);
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(74, 144, 247, 0.25);
+  font-family: var(--font-primary, 'Inter', sans-serif);
 }
 
 .get-turn-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-xl), 0 0 30px rgba(255,255,255,0.3);
-  background: #f8fafc;
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(74, 144, 247, 0.35);
 }
 
 .get-turn-btn:active {
@@ -170,28 +173,28 @@
 }
 
 .turn-number-big {
-  font-size: 5rem;
-  font-weight: 900;
-  color: white;
-  text-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  letter-spacing: 0.05em;
+  font-size: 4.5rem;
+  font-weight: 800;
+  color: #4a90f7;
+  letter-spacing: 0.03em;
   font-family: 'Inter', monospace;
 }
 
 /* Position Display */
 .position-display {
   background: white;
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
   padding: 2rem;
   text-align: center;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
   margin-top: 2rem;
   animation: fadeInUp 0.5s ease-out;
 }
 
 .position-label {
   font-size: 0.9375rem;
-  color: var(--gray);
+  color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-weight: 600;
@@ -199,11 +202,12 @@
 }
 
 .position-number {
-  font-size: 4rem;
-  font-weight: 900;
-  color: var(--accent);
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #4a90f7;
   line-height: 1;
   margin-bottom: 0.75rem;
+  font-family: 'Inter', monospace;
 }
 
 /* Alerts */
@@ -212,7 +216,7 @@
   align-items: center;
   gap: 1rem;
   padding: 1.25rem 1.5rem;
-  border-radius: var(--radius);
+  border-radius: 10px;
   margin-top: 1.5rem;
   font-weight: 500;
 }
@@ -228,8 +232,8 @@
 }
 
 .alert-text {
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 600;
 }
 
 .alert-subtext {
@@ -239,12 +243,12 @@
 
 /* Status Text */
 #statusText {
-  font-size: 1.125rem;
-  color: var(--dark);
+  font-size: 1.05rem;
+  color: #1e293b;
   margin: 1rem 0;
   padding: 1rem;
   background: #f8fafc;
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   font-weight: 500;
 }
 
@@ -253,13 +257,12 @@
   background: linear-gradient(135deg, #10b981, #059669);
   color: white;
   padding: 2rem;
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
   text-align: center;
   margin: 2rem 0;
-  font-size: 1.5rem;
-  font-weight: 800;
-  box-shadow: var(--shadow-lg), 0 0 40px rgba(16, 185, 129, 0.3);
-  animation: pulse 2s infinite;
+  font-size: 1.4rem;
+  font-weight: 700;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
 }
 
 /* Buttons */
@@ -268,21 +271,21 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1.5rem;
-  background: rgba(255,255,255,0.15);
-  color: white;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-radius: var(--radius-sm);
-  font-size: 0.9375rem;
+  background: rgba(74, 144, 247, 0.1);
+  color: #4a90f7;
+  border: 1.5px solid rgba(74, 144, 247, 0.3);
+  border-radius: 8px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: var(--transition);
-  font-family: var(--font-primary);
+  transition: all 0.25s ease;
+  font-family: var(--font-primary, 'Inter', sans-serif);
 }
 
 .secondary-btn:hover {
-  background: rgba(255,255,255,0.25);
-  border-color: rgba(255,255,255,0.5);
-  transform: translateY(-2px);
+  background: rgba(74, 144, 247, 0.15);
+  border-color: #4a90f7;
+  transform: translateY(-1px);
 }
 
 /* Modal */
@@ -300,7 +303,6 @@
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s ease;
-  backdrop-filter: blur(4px);
 }
 
 .modal-overlay.show {
@@ -310,50 +312,45 @@
 
 .modal-dialog {
   background: white;
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
   padding: 2.5rem;
   max-width: 480px;
   width: 90%;
   text-align: center;
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   transform: scale(0.9) translateY(20px);
   transition: all 0.3s ease;
-  animation: none;
 }
 
 .modal-overlay.show .modal-dialog {
   transform: scale(1) translateY(0);
-  animation: fadeInUp 0.3s ease-out;
 }
 
 .modal-icon {
-  font-size: 4rem;
+  font-size: 3.5rem;
   margin-bottom: 1rem;
 }
 
 .modal-title {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--dark);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1e293b;
   margin-bottom: 1rem;
+  letter-spacing: -0.01em;
 }
 
 .modal-turn {
-  font-size: 3.5rem;
-  font-weight: 900;
-  color: var(--accent);
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-family: 'Inter', monospace;
+  font-size: 3rem;
+  font-weight: 800;
+  color: #4a90f7;
   margin: 1rem 0;
-  letter-spacing: 0.1em;
+  font-family: 'Inter', monospace;
+  letter-spacing: 0.05em;
 }
 
 .modal-dialog p {
-  color: var(--gray);
-  line-height: 1.7;
+  color: #64748b;
+  line-height: 1.6;
 }
 
 .modal-dialog .btn {
@@ -361,50 +358,18 @@
   min-width: 160px;
 }
 
-/* Logout Button */
-#logoutBtn {
-  position: fixed;
-  top: 1.5rem;
-  right: 1.5rem;
-  z-index: 100;
-}
-
-#logoutBtn button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  background: rgba(255,255,255,0.15);
-  color: white;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-radius: var(--radius-sm);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-  backdrop-filter: blur(10px);
-  font-family: var(--font-primary);
-}
-
-#logoutBtn button:hover {
-  background: rgba(239, 68, 68, 0.9);
-  border-color: rgba(239, 68, 68, 0.9);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
 /* Responsive Home */
 @media (max-width: 768px) {
   .home-container {
-    padding: 1rem;
+    padding: 1.5rem;
   }
 
   .welcome-title {
-    font-size: 2rem;
+    font-size: 2.25rem;
   }
 
   .welcome-subtitle {
-    font-size: 1rem;
+    font-size: 1.05rem;
   }
 
   .welcome-icon {
@@ -412,28 +377,18 @@
   }
 
   .turn-number-big {
-    font-size: 3.5rem;
+    font-size: 3.25rem;
   }
 
   .position-number {
-    font-size: 3rem;
+    font-size: 2.75rem;
   }
 
   .modal-dialog {
-    padding: 1.5rem;
+    padding: 2rem;
   }
 
   .modal-turn {
     font-size: 2.5rem;
-  }
-
-  #logoutBtn {
-    top: 1rem;
-    right: 1rem;
-  }
-
-  #logoutBtn button {
-    padding: 0.625rem 1rem;
-    font-size: 0.8125rem;
   }
 }

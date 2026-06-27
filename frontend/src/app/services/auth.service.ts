@@ -52,6 +52,10 @@ export class AuthService {
     return this.http.get(`${this.apiUrl}/verify-session/`, { headers: this.getHeaders() });
   }
 
+  updateProfile(data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/profile/`, data, { headers: this.getHeaders() });
+  }
+
   setSession(token: string, user: any): void {
     localStorage.setItem('turnify_token', token);
     localStorage.setItem('turnify_user', JSON.stringify(user));

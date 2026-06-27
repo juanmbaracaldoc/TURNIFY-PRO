@@ -7,82 +7,105 @@
 .reschedule-container {
   max-width: 1200px;
   margin: 2rem auto;
-  padding: 0 1rem;
+  padding: 0 1.5rem;
   flex: 1;
 }
 
 .reschedule-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 2rem;
-  backdrop-filter: blur(10px);
+  background: white;
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
 }
 
 .reschedule-card h1 {
-  color: white;
+  color: #1e293b;
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .loading-state,
 .empty-state {
   text-align: center;
-  padding: 2rem;
-  color: #aaa;
+  padding: 3rem 2rem;
+  color: #64748b;
 }
 
 .turns-table {
   width: 100%;
   border-collapse: collapse;
-  color: white;
+  color: #1e293b;
+  font-family: var(--font-primary, 'Inter', sans-serif);
 }
 
 .turns-table th,
 .turns-table td {
-  padding: 1rem;
+  padding: 1.125rem 1rem;
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .turns-table th {
-  background: rgba(0, 0, 0, 0.2);
+  background: #4a90f7;
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.turns-table td {
+  font-size: 0.9375rem;
 }
 
 .turn-number {
-  font-weight: bold;
-  color: var(--accent, #00f2fe);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #4a90f7;
+  font-family: 'Inter', monospace;
 }
 
 .status-badge {
-  padding: 0.25rem 0.75rem;
+  padding: 0.4rem 1rem;
   border-radius: 20px;
   font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .status-waiting {
-  background: rgba(243, 156, 18, 0.2);
-  color: #f39c12;
+  background: #fef3c7;
+  color: #d97706;
 }
 
 .status-calling {
-  background: rgba(231, 76, 60, 0.2);
-  color: #e74c3c;
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 .status-completed {
-  background: rgba(39, 174, 96, 0.2);
-  color: #27ae60;
+  background: #d1fae5;
+  color: #059669;
 }
 
 .btn-reschedule {
-  background: #3498db;
+  background: #4a90f7;
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.25s ease;
 }
 
 .btn-reschedule:hover {
-  background: #2980b9;
+  background: #2563eb;
+  transform: translateY(-1px);
 }

@@ -13,6 +13,7 @@ class Turn(models.Model):
     documents_pending=models.IntegerField(default=0, help_text="Count of pending documents")
     documents_approved=models.IntegerField(default=0, help_text="Count of approved documents")
     documents_rejected=models.IntegerField(default=0, help_text="Count of rejected documents")
+    sede=models.CharField(max_length=100, blank=True, default="MOSQUERA", help_text="Office location")
     def __str__(self):
         return self.number
 

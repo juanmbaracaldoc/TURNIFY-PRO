@@ -563,6 +563,7 @@ def get_admin_statistics(request):
 @api_view(['POST'])
 def create_turn(request):
     service_type = request.data.get('service_type', 'general')
+    sede = request.data.get('sede', 'MOSQUERA')
     token = get_token_from_request(request)
     payload = decode_access_token(token) if token else None
     user_name = payload.get('username', '') if payload else ''
@@ -581,13 +582,14 @@ def create_turn(request):
                 'phone': client.phone
             }
 
-    Turn.objects.create(number=number, service_type=service_type)
+    Turn.objects.create(number=number, service_type=service_type, sede=sede)
 
     if db:
         db.collection("turns").document(number).set({
             "number": number,
             "status": "waiting",
             "service_type": service_type,
+            "sede": sede,
             "client_data": client_data
         })
 
@@ -821,3 +823,42 @@ def upload_document(request):
         turn.save()
         return Response({'success': True})
     return Response({'success': False, 'message': 'Turn not found'}, status=404)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def my_turns(request):
+    token = get_token_from_request(request)
+    payload = decode_access_token(token) if token else None
+    username = payload.get('username', '') if payload else ''
+    
+    if not username:
+        return Response({'turns': []})
+    
+    turns = Turn.objects.filter(client_data__icontains=username).order_by('-created_at')[:10]
+    turns_data = [{
+        'number': t.number,
+        'status': t.status,
+        'service_type': t.service_type,
+        'sede': t.sede,
+        'created_at': t.created_at.strftime('%H:%M') if t.created_at else ''
+    } for t in turns]
+    
+    return Response({'turns': turns_data})
+
+
+@csrf_exempt
+@api_view(['DELETE'])
+def cancel_turn(request, turn_number):
+    turn = Turn.objects.filter(number=turn_number, status='waiting').first()
+    if not turn:
+        return Response({'success': False, 'message': 'Turno no encontrado o no se puede cancelar'}, status=404)
+    
+    if db:
+        try:
+            db.collection('turns').document(turn_number).delete()
+        except:
+            pass
+    turn.delete()
+    broadcast_turn_update()
+    return Response({'success': True, 'message': 'Turno cancelado'})

@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 from django.http import HttpResponse
 from pathlib import Path
 import mimetypes
+from turns import views
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DIST_DIR = BASE_DIR / 'frontend' / 'dist' / 'frontend' / 'browser'
@@ -37,6 +38,13 @@ def get_asset_urls():
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('turns.urls')),
+    path('', views.home, name='index'),
+    path('home/', views.home, name='home'),
+    path('employee/', views.employee, name='employee'),
+    path('screen/', views.screen, name='screen'),
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('register/', views.register_page, name='register_page'),
+    path('login/', views.login_page, name='login_page'),
 ] + get_asset_urls() + [
     # SPA fallback - must be last
     re_path(r'^.*$', serve_index),

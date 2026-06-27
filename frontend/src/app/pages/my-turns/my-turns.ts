@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Navbar } from '../../components/navbar/navbar';
-import { Footer } from '../../components/footer/footer';
+import { TurnService } from '../../services/turn.service';
+
+declare var websocketManager: any;
 
 @Component({
   selector: 'app-my-turns',
   standalone: true,
-  imports: [CommonModule, Navbar, Footer],
+  imports: [CommonModule],
   templateUrl: './my-turns.html',
   styleUrl: './my-turns.css'
 })
@@ -16,6 +17,15 @@ export class MyTurns implements OnInit {
 
   ngOnInit(): void {
     this.loadMyTurns();
+    this.setupWebSocket();
+  }
+
+  setupWebSocket(): void {
+    setTimeout(() => {
+      if (websocketManager && websocketManager.init) {
+        websocketManager.init();
+      }
+    }, 1000);
   }
 
   loadMyTurns(): void {
@@ -36,9 +46,9 @@ export class MyTurns implements OnInit {
     });
   }
 
-  cancelTurn(turnId: string): void {
+  cancelTurn(turnNumber: string): void {
     if (confirm('¿Cancelar este turno?')) {
-      fetch('/api/cancel-turn/' + turnId + '/', {
+      fetch('/api/cancel-turn/' + turnNumber + '/', {
         method: 'DELETE',
         credentials: 'same-origin'
       })

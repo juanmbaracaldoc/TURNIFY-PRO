@@ -1,12 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Navbar } from '../../components/navbar/navbar';
-import { Footer } from '../../components/footer/footer';
 
 @Component({
   selector: 'app-reschedule-turns',
   standalone: true,
-  imports: [CommonModule, Navbar, Footer],
+  imports: [CommonModule],
   templateUrl: './reschedule-turns.html',
   styleUrl: './reschedule-turns.css'
 })

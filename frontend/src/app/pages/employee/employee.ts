@@ -3,11 +3,12 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { TurnService } from '../../services/turn.service';
 import { NgIf, NgFor } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-employee',
   standalone: true,
-  imports: [NgIf, NgFor],
+  imports: [NgIf, NgFor, FormsModule],
   templateUrl: './employee.html',
   styleUrl: './employee.css'
 })
@@ -16,8 +17,14 @@ export class Employee implements OnInit, OnDestroy {
   waitingTurns: any[] = [];
   currentTurn: any = null;
   stats = { waiting: 0, totalToday: 0, processed: 0 };
-  
+
+  showActionModal = false;
+
+  filterSede = '';
+  sedes = ['MOSQUERA', 'MADRID', 'FACATATIVA', 'FUNZA'];
+
   private intervalId: any;
+  currentUser: any = null;
 
   constructor(
     private auth: AuthService,
@@ -26,6 +33,8 @@ export class Employee implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.currentUser = this.auth.getCurrentUser();
+    
     this.auth.verifySession().subscribe({
       next: (data: any) => {
         if (!data.authenticated || data.role !== 'employee') {
@@ -53,7 +62,10 @@ export class Employee implements OnInit, OnDestroy {
     this.turn.getAllTurns().subscribe({
       next: (data: any) => {
         this.turns = data.turns || [];
-        this.waitingTurns = this.turns.filter((t: any) => t.status === 'waiting').slice(0, 10);
+        this.waitingTurns = this.turns.filter((t: any) => {
+          if (this.filterSede && t.sede !== this.filterSede) return false;
+          return t.status === 'waiting';
+        }).slice(0, 10);
         this.currentTurn = this.turns.find((t: any) => t.status === 'called') || null;
         
         this.stats = {
@@ -65,11 +77,16 @@ export class Employee implements OnInit, OnDestroy {
     });
   }
 
+  onSedeFilterChange(): void {
+    this.loadData();
+  }
+
   callNext(): void {
     this.turn.callNext().subscribe({
       next: (data: any) => {
         if (data.number) {
           this.loadData();
+          this.showActionModal = true;
         } else {
           alert('No hay turnos en espera');
         }
@@ -83,6 +100,7 @@ export class Employee implements OnInit, OnDestroy {
       next: (data: any) => {
         if (data.success) {
           this.loadData();
+          this.showActionModal = true;
         } else {
           alert(data.message || 'Error al llamar turno');
         }
@@ -95,9 +113,32 @@ export class Employee implements OnInit, OnDestroy {
     this.turn.finishCurrent().subscribe({
       next: (data: any) => {
         this.loadData();
+        this.showActionModal = false;
       },
       error: () => alert('No hay turno activo')
     });
+  }
+
+  rescheduleCurrent(): void {
+    this.turn.rescheduleCurrent().subscribe({
+      next: (data: any) => {
+        this.loadData();
+        this.showActionModal = false;
+      },
+      error: () => alert('Error al reagendar turno')
+    });
+  }
+
+  cancelCurrent(): void {
+    if (confirm('¿Estás seguro de cancelar este turno?')) {
+      this.turn.cancelCurrent().subscribe({
+        next: (data: any) => {
+          this.loadData();
+          this.showActionModal = false;
+        },
+        error: () => alert('Error al cancelar turno')
+      });
+    }
   }
 
   logout(): void {
@@ -107,5 +148,15 @@ export class Employee implements OnInit, OnDestroy {
       error: () => {}
     });
     this.router.navigate(['/login']);
+  }
+
+  getEmployeeName(): string {
+    const user = this.auth.getCurrentUser();
+    return user?.full_name || user?.username || 'Empleado';
+  }
+
+  getEmployeeSede(): string {
+    const user = this.auth.getCurrentUser();
+    return user?.sede || 'N/A';
   }
 }

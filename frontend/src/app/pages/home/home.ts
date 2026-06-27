@@ -14,6 +14,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class Home implements OnInit, OnDestroy {
   serviceType = 'general';
+  selectedSede = 'MOSQUERA';
   userTurn: string | null = null;
   positionNum: number = 0;
   turnsAhead: number = 0;
@@ -22,6 +23,7 @@ export class Home implements OnInit, OnDestroy {
   alertShown = false;
   completed = false;
   documents: string[] = [];
+  currentUser: any = null;
   
   private positionInterval: any;
 
@@ -32,6 +34,8 @@ export class Home implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.currentUser = this.auth.getCurrentUser();
+    
     this.auth.verifySession().subscribe({
       next: (data: any) => {
         if (!data.authenticated || data.role !== 'client') {
@@ -125,44 +129,16 @@ export class Home implements OnInit, OnDestroy {
     } catch(e) {}
   }
 
-  anotherTurnModal = false;
   showTurnModal = false;
-
-  showAnotherTurnModal(): void {
-    this.anotherTurnModal = true;
-  }
-
-  closeAnotherTurnModal(): void {
-    this.anotherTurnModal = false;
-  }
 
   closeModal(): void {
     this.showTurnModal = false;
   }
 
-  confirmAnotherTurn(): void {
-    this.closeAnotherTurnModal();
-    this.turn.createTurn().subscribe({
-      next: (data: any) => {
-        this.userTurn = data.number;
-        if (this.userTurn) {
-          localStorage.setItem('userTurn', this.userTurn);
-        }
-        this.alertShown = false;
-        this.completed = false;
-        this.showTurnModal = true;
-        this.startPositionTracking();
-      },
-      error: () => {
-        alert('❌ Error al solicitar turno adicional');
-      }
-    });
-  }
-
   getTurn(): void {
     if (!this.serviceType) return;
 
-    this.turn.createTurn(this.serviceType).subscribe({
+    this.turn.createTurn(this.serviceType, this.selectedSede).subscribe({
       next: (data: any) => {
         this.userTurn = data.number;
         if (this.userTurn) {

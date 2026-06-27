@@ -1,6 +1,0 @@
-/* Login CSS: prevent blurred text and keep legacy look readable */
-:host { display:block; }
-html, body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
-.login-container{ max-width:400px; margin:2rem auto; padding:2rem; }
-.login-card{ background:#fff; border-radius:12px; padding:2rem; box-shadow:0 10px 30px rgba(0,0,0,.15); }
-

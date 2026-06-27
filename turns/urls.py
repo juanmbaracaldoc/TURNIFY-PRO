@@ -31,4 +31,6 @@ urlpatterns=[
     path('export/excel/', views.export_excel, name='export_excel'),
     path('documents/', views.set_required_documents, name='set_required_documents'),
     path('upload-document/', views.upload_document, name='upload_document'),
+    path('my-turns/', views.my_turns, name='my_turns'),
+    path('cancel-turn/<str:turn_number>/', views.cancel_turn, name='cancel_turn'),
 ]

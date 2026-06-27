@@ -1,5 +1,3 @@
-<app-navbar [role]="'client'"></app-navbar>
-
 <div class="my-turns-container fade-in-up">
   <div class="turns-card">
     <h1>🎫 Mis Turnos</h1>
@@ -18,6 +16,7 @@
         <tr>
           <th>Número</th>
           <th>Tipo</th>
+          <th>Sede</th>
           <th>Estado</th>
           <th>Fecha</th>
           <th>Acciones</th>
@@ -27,6 +26,7 @@
         <tr *ngFor="let turn of turns">
           <td class="turn-number">{{ turn.number }}</td>
           <td>{{ turn.service_type }}</td>
+          <td>{{ turn.sede }}</td>
           <td>
             <span class="status-badge" [class.status-waiting]="turn.status === 'waiting'"
                                  [class.status-calling]="turn.status === 'calling'"
@@ -36,12 +36,10 @@
           </td>
           <td>{{ turn.created_at }}</td>
           <td>
-            <button *ngIf="turn.status === 'waiting'" (click)="cancelTurn(turn.id)" class="btn-cancel">❌ Cancelar</button>
+            <button *ngIf="turn.status === 'waiting'" (click)="cancelTurn(turn.number)" class="btn-cancel">❌ Cancelar</button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
 </div>
-
-<app-footer></app-footer>

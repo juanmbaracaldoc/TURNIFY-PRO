@@ -1,39 +1,91 @@
-<div class="dashboard">
-  <header style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; text-align: center; position: relative;">
-    <h1 style="font-size: 2.5rem; margin: 0; color: white;">PANEL DE EMPLEADO</h1>
-    <div style="font-size: 1.2rem; opacity: 0.9; margin-top: 0.5rem; color: white;">Turnify Pro - Gestión de Turnos</div>
-    <button (click)="logout()" style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.15); color: white; border: 2px solid rgba(255,255,255,0.3); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600; backdrop-filter: blur(10px);">Cerrar Sesión</button>
-  </header>
+<div class="employee-dashboard">
+  <!-- Welcome Banner -->
+  <div class="welcome-banner" *ngIf="currentUser">
+    <div class="welcome-content">
+      <h1 class="welcome-title">👋 ¡Bienvenido de vuelta, {{ getEmployeeName() }}!</h1>
+      <p class="welcome-sede">Sede: {{ getEmployeeSede() }}</p>
+    </div>
+  </div>
 
+  <!-- Current Turn Section -->
   <div class="current-turn-section">
-    <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: rgba(255,255,255,0.9);">TURNO ACTUAL</div>
+    <div class="turn-header">TURNO ACTUAL</div>
     <div id="currentTurn" class="turno-actual-panel">{{ currentTurn?.number || '--' }}</div>
     <div id="currentStatus" class="estado-actual">
       <span style="opacity: 0.8;" *ngIf="!currentTurn">Esperando turno...</span>
       <span style="color: white; font-weight: bold;" *ngIf="currentTurn">LLAMANDO: {{ currentTurn?.number }}</span>
     </div>
+    
+    <!-- Botón Completar -->
+    <button *ngIf="currentTurn" class="complete-turn-btn" (click)="showActionModal = true">
+      ✅ Completar Turno
+    </button>
   </div>
 
+  <!-- Action Modal for Current Turn -->
+  <div class="action-modal" *ngIf="showActionModal && currentTurn">
+    <div class="action-modal-content">
+      <h3>Opciones del Turno {{ currentTurn?.number }}</h3>
+      <p class="action-subtitle">Selecciona una acción para este turno:</p>
+      
+      <div class="action-buttons">
+        <button class="action-btn complete-btn" (click)="finishCurrent()">
+          <span class="action-icon">✅</span>
+          <span>Completar</span>
+        </button>
+        
+        <button class="action-btn reschedule-btn" (click)="rescheduleCurrent()">
+          <span class="action-icon">📅</span>
+          <span>Reagendar</span>
+        </button>
+        
+        <button class="action-btn cancel-btn" (click)="cancelCurrent()">
+          <span class="action-icon">❌</span>
+          <span>Cancelar</span>
+        </button>
+      </div>
+      
+      <button class="close-modal-btn" (click)="showActionModal = false">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Control Panel -->
   <div class="control-panel">
-    <h2 style="margin: 0 0 1.5rem 0; color: var(--dark);">Panel de Control</h2>
+    <h2>🎛️ Panel de Control</h2>
     <div class="control-buttons">
       <button id="callBtn" class="control-btn call-btn" (click)="callNext()">
-        <span style="font-size: 2rem;">&#9835;</span>
+        <span class="btn-icon">&#9835;</span>
         <span>LLAMAR SIGUIENTE</span>
-      </button>
-      <button id="finishBtn" class="control-btn finish-btn" (click)="finishCurrent()" [disabled]="!currentTurn">
-        <span style="font-size: 2rem;">&#10003;</span>
-        <span>TERMINAR TURNO</span>
       </button>
     </div>
   </div>
 
+  <!-- Stats Section -->
   <div class="stats-section">
-    <div class="stat-card"><div class="stat-number">{{ stats.waiting }}</div><div class="stat-label">Turnos Esperando</div></div>
-    <div class="stat-card"><div class="stat-number">{{ stats.totalToday }}</div><div class="stat-label">Total Hoy</div></div>
-    <div class="stat-card"><div class="stat-number">{{ stats.processed }}</div><div class="stat-label">Procesados</div></div>
+    <div class="stat-card">
+      <div class="stat-number">{{ stats.waiting }}</div>
+      <div class="stat-label">Turnos Esperando</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ stats.totalToday }}</div>
+      <div class="stat-label">Total Hoy</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ stats.processed }}</div>
+      <div class="stat-label">Procesados</div>
+    </div>
   </div>
 
+  <!-- Sede Filter -->
+  <div class="filter-section">
+    <label class="filter-label">Filtrar por Sede:</label>
+    <select [(ngModel)]="filterSede" (change)="onSedeFilterChange()" class="form-control form-select">
+      <option value="">Todas las sedes</option>
+      <option *ngFor="let sede of sedes">{{ sede }}</option>
+    </select>
+  </div>
+
+  <!-- Waiting Queue -->
   <div class="waiting-queue">
     <div class="queue-header">
       <h2 class="queue-title">Cola de Espera</h2>
@@ -41,12 +93,13 @@
     </div>
     <div id="waitingQueue">
       <div class="no-turns" *ngIf="waitingTurns.length === 0">
-        <p style="color: var(--dark);">No hay turnos en espera</p>
+        <p>No hay turnos en espera</p>
       </div>
       <div class="turn-item" *ngFor="let turn of waitingTurns">
         <div class="turn-info">
-          <span class="turn-number" style="color: var(--dark);">{{ turn.number }}</span>
-          <span class="turn-time" style="color: var(--gray);">{{ turn.created_at }}</span>
+          <span class="turn-number">{{ turn.number }}</span>
+          <span class="turn-time">{{ turn.created_at }}</span>
+          <span class="turn-sede" *ngIf="turn.sede">{{ turn.sede }}</span>
         </div>
         <button class="call-turn-btn" (click)="callSpecific(turn.number)">Llamar</button>
       </div>
