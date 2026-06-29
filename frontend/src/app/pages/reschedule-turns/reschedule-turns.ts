@@ -18,10 +18,12 @@ export class RescheduleTurns implements OnInit {
 
   loadTurns(): void {
     this.loading = true;
-    fetch('/api/get-all-turns/', {
+    fetch('/api/all/', {
       method: 'GET',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('turnify_token') || ''}`
+      }
     })
     .then(res => res.json())
     .then(data => {

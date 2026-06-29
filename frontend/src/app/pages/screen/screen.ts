@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { TurnService } from '../../services/turn.service';
+import { WebsocketService } from '../../services/websocket.service';
 import { NgIf, NgFor } from '@angular/common';
 
 @Component({
@@ -16,37 +17,37 @@ export class Screen implements OnInit, OnDestroy {
   waitingCount = 0;
   timer = '--:--:--';
   
-  private intervalId: any;
   private clockInterval: any;
 
-  constructor(private turn: TurnService) {}
+  constructor(private ws: WebsocketService) {}
 
   ngOnInit(): void {
     this.updateClock();
     this.clockInterval = setInterval(() => this.updateClock(), 1000);
-    
-    this.intervalId = setInterval(() => this.loadData(), 2000);
-    this.loadData();
+
+    this.ws.messages$.subscribe({
+      next: (msg) => {
+        if (Array.isArray(msg)) {
+          this.turns = msg;
+          this.currentTurn = this.turns.find((t: any) => t.status === 'called');
+          this.nextTurns = this.turns.filter((t: any) => t.status === 'waiting').slice(0, 5);
+          this.waitingCount = this.turns.filter((t: any) => t.status === 'waiting').length;
+        }
+      }
+    });
+
+    if (!this.ws.isConnected()) {
+      this.ws.connect();
+    }
+    this.ws.send({ action: 'get_all' });
   }
 
   ngOnDestroy(): void {
-    if (this.intervalId) clearInterval(this.intervalId);
     if (this.clockInterval) clearInterval(this.clockInterval);
   }
 
   updateClock(): void {
     const now = new Date();
     this.timer = now.toLocaleTimeString('es-ES');
-  }
-
-  loadData(): void {
-    this.turn.getAllTurns().subscribe({
-      next: (data: any) => {
-        this.turns = data.turns || [];
-        this.currentTurn = this.turns.find((t: any) => t.status === 'called');
-        this.nextTurns = this.turns.filter((t: any) => t.status === 'waiting').slice(0, 5);
-        this.waitingCount = this.turns.filter((t: any) => t.status === 'waiting').length;
-      }
-    });
   }
 }

@@ -18,10 +18,12 @@ export class ManageUsers implements OnInit {
 
   loadUsers(): void {
     this.loading = true;
-    fetch('/api/get-users/', {
+    fetch('/api/users/', {
       method: 'GET',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('turnify_token') || ''}`
+      }
     })
     .then(res => res.json())
     .then(data => {
@@ -38,7 +40,9 @@ export class ManageUsers implements OnInit {
     if (confirm('¿Eliminar usuario ' + username + '?')) {
       fetch('/api/delete-user/' + username + '/', {
         method: 'DELETE',
-        credentials: 'same-origin'
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('turnify_token') || ''}`
+        }
       })
       .then(() => this.loadUsers())
       .catch(() => alert('Error al eliminar'));

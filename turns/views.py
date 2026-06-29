@@ -608,7 +608,7 @@ def broadcast_turn_update():
             'created_at': t.created_at.strftime('%H:%M') if t.created_at else ''
         })
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)('turns', {'type': 'turn_update', 'turns': turns_data})
+    async_to_sync(channel_layer.group_send)('turns', {'type': 'turn_update', 'data': turns_data})
 
 
 @csrf_exempt

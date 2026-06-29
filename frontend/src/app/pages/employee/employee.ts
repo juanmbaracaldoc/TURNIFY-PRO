@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { TurnService } from '../../services/turn.service';
+import { WebsocketService } from '../../services/websocket.service';
 import { NgIf, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -17,18 +18,17 @@ export class Employee implements OnInit, OnDestroy {
   waitingTurns: any[] = [];
   currentTurn: any = null;
   stats = { waiting: 0, totalToday: 0, processed: 0 };
-
   showActionModal = false;
-
   filterSede = '';
   sedes = ['MOSQUERA', 'MADRID', 'FACATATIVA', 'FUNZA'];
 
-  private intervalId: any;
+  private clockInterval: any;
   currentUser: any = null;
 
   constructor(
     private auth: AuthService,
     private turn: TurnService,
+    private ws: WebsocketService,
     private router: Router
   ) {}
 
@@ -47,45 +47,45 @@ export class Employee implements OnInit, OnDestroy {
         this.router.navigate(['/login']);
       }
     });
-    
-    this.loadData();
-    this.intervalId = setInterval(() => this.loadData(), 2000);
+
+    this.ws.messages$.subscribe({
+      next: (msg) => {
+        if (Array.isArray(msg)) {
+          this.turns = msg;
+          this.waitingTurns = this.turns.filter((t: any) => {
+            if (this.filterSede && t.sede !== this.filterSede) return false;
+            return t.status === 'waiting';
+          }).slice(0, 10);
+          this.currentTurn = this.turns.find((t: any) => t.status === 'called') || null;
+          
+          this.stats = {
+            waiting: this.turns.filter((t: any) => t.status === 'waiting').length,
+            totalToday: this.turns.length,
+            processed: this.turns.filter((t: any) => t.status === 'finished').length
+          };
+        }
+      }
+    });
+
+    if (!this.ws.isConnected()) {
+      this.ws.connect();
+    }
+    this.ws.send({ action: 'get_all' });
   }
 
   ngOnDestroy(): void {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-    }
-  }
-
-  loadData(): void {
-    this.turn.getAllTurns().subscribe({
-      next: (data: any) => {
-        this.turns = data.turns || [];
-        this.waitingTurns = this.turns.filter((t: any) => {
-          if (this.filterSede && t.sede !== this.filterSede) return false;
-          return t.status === 'waiting';
-        }).slice(0, 10);
-        this.currentTurn = this.turns.find((t: any) => t.status === 'called') || null;
-        
-        this.stats = {
-          waiting: this.turns.filter((t: any) => t.status === 'waiting').length,
-          totalToday: this.turns.length,
-          processed: this.turns.filter((t: any) => t.status === 'finished').length
-        };
-      }
-    });
+    if (this.clockInterval) clearInterval(this.clockInterval);
   }
 
   onSedeFilterChange(): void {
-    this.loadData();
+    this.ws.send({ action: 'get_all' });
   }
 
   callNext(): void {
     this.turn.callNext().subscribe({
       next: (data: any) => {
         if (data.number) {
-          this.loadData();
+          this.ws.send({ action: 'get_all' });
           this.showActionModal = true;
         } else {
           alert('No hay turnos en espera');
@@ -99,7 +99,7 @@ export class Employee implements OnInit, OnDestroy {
     this.turn.callSpecific(turn_number).subscribe({
       next: (data: any) => {
         if (data.success) {
-          this.loadData();
+          this.ws.send({ action: 'get_all' });
           this.showActionModal = true;
         } else {
           alert(data.message || 'Error al llamar turno');
@@ -112,7 +112,7 @@ export class Employee implements OnInit, OnDestroy {
   finishCurrent(): void {
     this.turn.finishCurrent().subscribe({
       next: (data: any) => {
-        this.loadData();
+        this.ws.send({ action: 'get_all' });
         this.showActionModal = false;
       },
       error: () => alert('No hay turno activo')
@@ -122,7 +122,7 @@ export class Employee implements OnInit, OnDestroy {
   rescheduleCurrent(): void {
     this.turn.rescheduleCurrent().subscribe({
       next: (data: any) => {
-        this.loadData();
+        this.ws.send({ action: 'get_all' });
         this.showActionModal = false;
       },
       error: () => alert('Error al reagendar turno')
@@ -133,7 +133,7 @@ export class Employee implements OnInit, OnDestroy {
     if (confirm('¿Estás seguro de cancelar este turno?')) {
       this.turn.cancelCurrent().subscribe({
         next: (data: any) => {
-          this.loadData();
+          this.ws.send({ action: 'get_all' });
           this.showActionModal = false;
         },
         error: () => alert('Error al cancelar turno')

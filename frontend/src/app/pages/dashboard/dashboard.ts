@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { TurnService } from '../../services/turn.service';
+import { WebsocketService } from '../../services/websocket.service';
 import { HttpClient } from '@angular/common/http';
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -45,8 +46,6 @@ export class Dashboard implements OnInit, OnDestroy {
   hourlyChart: any;
   usersChart: any;
   topServicesChart: any;
-  
-  private intervalId: any;
 
   stats: any = {
     total_users: 0,
@@ -68,20 +67,39 @@ export class Dashboard implements OnInit, OnDestroy {
     rejected_documents: 0
   };
 
+   private intervalId: any;
+
   constructor(
     private auth: AuthService,
     private turn: TurnService,
     private http: HttpClient,
+    private ws: WebsocketService,
     private router: Router
   ) {}
 
-  ngOnInit(): void {
+   ngOnInit(): void {
     if (!this.auth.isAuthenticated() || this.auth.getCurrentRole() !== 'admin') {
       this.auth.clearSession();
       this.router.navigate(['/login']);
       return;
     }
-    
+
+    this.ws.messages$.subscribe({
+      next: (msg) => {
+        if (Array.isArray(msg)) {
+          this.turns = msg;
+          this.currentTurn = this.turns.find((t: any) => t.status === 'called');
+          const next = this.turns.find((t: any) => t.status === 'waiting');
+          this.nextTurn = next?.number || 'NO HAY';
+        }
+      }
+    });
+
+    if (!this.ws.isConnected()) {
+      this.ws.connect();
+    }
+    this.ws.send({ action: 'get_all' });
+
     setTimeout(() => this.initCharts(), 100);
     this.loadAllData();
     this.intervalId = setInterval(() => this.loadAllData(), 20000);
@@ -152,15 +170,6 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   loadAllData(): void {
-    this.turn.getAllTurns().subscribe({
-      next: (data: any) => {
-        this.turns = data.turns || [];
-        this.currentTurn = this.turns.find((t: any) => t.status === 'called');
-        const next = this.turns.find((t: any) => t.status === 'waiting');
-        this.nextTurn = next?.number || 'NO HAY';
-      }
-    });
-
     this.turn.getAdminStatistics().subscribe({
       next: (data: any) => {
         this.stats = data;

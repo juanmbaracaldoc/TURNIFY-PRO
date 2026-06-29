@@ -9,7 +9,7 @@ class TurnConsumer(AsyncWebsocketConsumer):
     # Se ejecuta cuando un cliente se conecta al WebSocket
     # Une al cliente al grupo de actualizaciones de turnos
     async def connect(self):
-        self.room_group_name = 'turns_updates'
+        self.room_group_name = 'turns'
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -63,7 +63,7 @@ class TurnConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_current_turn(self):
         from turns.models import Turn
-        turn = Turn.objects.filter(status="calling").first()
+        turn = Turn.objects.filter(status="called").first()
         if turn:
             return {'number': turn.number, 'status': turn.status}
         return None
@@ -153,8 +153,8 @@ class TurnConsumer(AsyncWebsocketConsumer):
         if not user_turn_obj:
             return {'position': -1, 'turns_ahead': -1, 'message': 'Turn not found'}
 
-        if user_turn_obj.status == "completed":
-            return {'position': 0, 'turns_ahead': 0, 'status': 'completed'}
+        if user_turn_obj.status == "finished":
+            return {'position': 0, 'turns_ahead': 0, 'status': 'finished'}
 
         turns_ahead = Turn.objects.filter(
             created_at__lt=user_turn_obj.created_at,

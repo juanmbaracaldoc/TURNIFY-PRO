@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { TurnService } from '../../services/turn.service';
+import { WebsocketService } from '../../services/websocket.service';
 import { NgIf, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -24,12 +25,12 @@ export class Home implements OnInit, OnDestroy {
   completed = false;
   documents: string[] = [];
   currentUser: any = null;
-  
-  private positionInterval: any;
+  showTurnModal = false;
 
   constructor(
     private auth: AuthService,
     private turn: TurnService,
+    private ws: WebsocketService,
     private router: Router
   ) {}
 
@@ -56,59 +57,72 @@ export class Home implements OnInit, OnDestroy {
       this.userTurn = stored;
       this.startPositionTracking();
     }
+
+    this.ws.messages$.subscribe({
+      next: (msg) => {
+        if (Array.isArray(msg) && this.userTurn) {
+          this.updatePositionFromTurns(msg);
+        }
+      }
+    });
+
+    if (!this.ws.isConnected()) {
+      this.ws.connect();
+    }
+    this.ws.send({ action: 'get_all' });
   }
 
   ngOnDestroy(): void {
-    if (this.positionInterval) {
-      clearInterval(this.positionInterval);
-    }
   }
 
   startPositionTracking(): void {
-    if (this.positionInterval) clearInterval(this.positionInterval);
-    
-    this.positionInterval = setInterval(() => {
-      if (this.userTurn) {
-        this.turn.getPosition(this.userTurn).subscribe({
-          next: (data: any) => {
-            this.updatePositionDisplay(data);
-          }
-        });
-      }
-    }, 2000);
+    if (!this.ws.isConnected()) {
+      this.ws.connect();
+    }
+    this.ws.send({ action: 'get_all' });
   }
 
-  updatePositionDisplay(d: any): void {
-    if (!d || d.position === -1) return;
+  updatePositionFromTurns(turns: any[]): void {
+    if (!this.userTurn) return;
+    
+    const userTurnObj = turns.find((t: any) => t.number === this.userTurn);
+    if (!userTurnObj) return;
 
-    this.positionNum = d.position;
-
-    if (d.status === 'finished') {
+    if (userTurnObj.status === 'finished') {
       this.completed = true;
       this.positionNum = 0;
-      if (this.positionInterval) clearInterval(this.positionInterval);
+      this.turnsAhead = 0;
+      this.positionDetail = '✅ Turno completado';
+      this.statusText = 'Finalizado';
       return;
     }
 
     this.completed = false;
+    const waitingTurns = turns
+      .filter((t: any) => t.status === 'waiting' || t.status === 'called')
+      .sort((a, b) => a.created_at?.localeCompare(b.created_at) || 0);
     
-    if (d.turns_ahead === 0) {
+    const position = waitingTurns.findIndex((t: any) => t.number === this.userTurn) + 1;
+    this.positionNum = position > 0 ? position : 0;
+    this.turnsAhead = Math.max(0, this.positionNum - 1);
+
+    if (this.turnsAhead === 0) {
       this.positionDetail = '🎯 ¡ES TU TURNO AHORA!';
       this.statusText = 'Atendiendo';
       this.playAlertSound();
-    } else if (d.turns_ahead === 1) {
+    } else if (this.turnsAhead === 1) {
       this.positionDetail = '⚠️ Siguiente turno (falta 1)';
       this.statusText = `Posición: #${this.positionNum} | Turnos adelante: 1`;
-    } else if (d.turns_ahead === 2) {
-      this.positionDetail = `Faltan ${d.turns_ahead} turnos`;
-      this.statusText = `Posición: #${this.positionNum} | Turnos adelante: ${d.turns_ahead}`;
+    } else if (this.turnsAhead === 2) {
+      this.positionDetail = `Faltan ${this.turnsAhead} turnos`;
+      this.statusText = `Posición: #${this.positionNum} | Turnos adelante: ${this.turnsAhead}`;
       if (!this.alertShown) {
         this.alertShown = true;
         this.playAlertSound();
       }
     } else {
-      this.positionDetail = `Faltan ${d.turns_ahead} turnos para ti`;
-      this.statusText = `Posición: #${this.positionNum} | Turnos adelante: ${d.turns_ahead}`;
+      this.positionDetail = `Faltan ${this.turnsAhead} turnos para ti`;
+      this.statusText = `Posición: #${this.positionNum} | Turnos adelante: ${this.turnsAhead}`;
       this.alertShown = false;
     }
   }
@@ -128,8 +142,6 @@ export class Home implements OnInit, OnDestroy {
       osc.stop(audioContext.currentTime + 0.5);
     } catch(e) {}
   }
-
-  showTurnModal = false;
 
   closeModal(): void {
     this.showTurnModal = false;
@@ -154,7 +166,6 @@ export class Home implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    if (this.positionInterval) clearInterval(this.positionInterval);
     this.auth.clearSession();
     this.auth.logout().subscribe({
       next: () => {},
